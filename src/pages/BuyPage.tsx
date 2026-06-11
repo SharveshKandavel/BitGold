@@ -1,27 +1,34 @@
 import React, { useState, useEffect } from "react";
+import { useMutation, useQuery } from "convex/react";
+import { api } from "../../convex/_generated/api";
 import { motion, AnimatePresence } from "framer-motion";
-import { useGold } from "../context/GoldContext";
 import Button from "../components/ui/Button";
 import Card from "../components/ui/Card";
 import Input from "../components/ui/Input";
-import { toast } from "sonner"; // For success toast
+import { toast } from "sonner";
+
+const GOLD_PRICE_PER_GRAM = 89.24;
+const FEE_PERCENTAGE = 0.005;
+
+import { useCurrentUser } from "../hooks/useCurrentUser";
 
 export function BuyPage() {
-  const { goldBalance, cadBalance, addGold, deductCad } = useGold();
+  const user = useCurrentUser();
+  const executeBuy = useMutation(api.transactions.executeBuy);
+  const ensureCurrentUser = useMutation(api.users.ensureCurrentUser);
   const [cadAmount, setCadAmount] = useState<string>("");
   const [goldAmount, setGoldAmount] = useState<number>(0);
   const [showSuccessAnimation, setShowSuccessAnimation] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Hardcoded values for now, could be fetched from an API in a real app
-  const goldPricePerGram = 89.24;
-  const feePercentage = 0.005; // 0.5% fee
+  const cadBalance = user?.cadBalance ?? 0;
 
   useEffect(() => {
     const amount = parseFloat(cadAmount);
     if (!isNaN(amount) && amount > 0) {
-      const fee = amount * feePercentage;
+      const fee = amount * FEE_PERCENTAGE;
       const amountAfterFee = amount - fee;
-      setGoldAmount(amountAfterFee / goldPricePerGram);
+      setGoldAmount(amountAfterFee / GOLD_PRICE_PER_GRAM);
     } else {
       setGoldAmount(0);
     }
@@ -29,38 +36,58 @@ export function BuyPage() {
 
   const handleCadAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
-    // Allow only numbers and a single decimal point
     if (/^\d*\.?\d*$/.test(value)) {
       setCadAmount(value);
     }
   };
 
-  const handleConfirmPurchase = () => {
+  const handleConfirmPurchase = async () => {
     const amount = parseFloat(cadAmount);
     if (isNaN(amount) || amount <= 0) {
       toast.error("Please enter a valid amount to buy gold.");
       return;
     }
     if (amount > cadBalance) {
-      toast.error("Insufficient CAD balance to complete this purchase.");
+      toast.error("Insufficient CAD balance to complete this transaction.");
       return;
     }
 
-    setShowSuccessAnimation(true);
-    addGold(goldAmount);
-    deductCad(amount);
+    setIsSubmitting(true);
+    try {
+      let userId = user?._id;
+      if (!userId) {
+        const createdId = await ensureCurrentUser({});
+        if (!createdId) {
+          throw new Error("You must be signed in to buy gold.");
+        }
+        userId = createdId;
+      }
 
-    // Reset after animation
-    setTimeout(() => {
-      setShowSuccessAnimation(false);
-      setCadAmount("");
-      setGoldAmount(0);
-      toast.success(`Successfully purchased ${goldAmount.toFixed(4)}g of gold!`);
-    }, 2000); // Duration of the animation
+      await executeBuy({
+        userId,
+        cadAmount: amount,
+        goldAmount,
+        pricePerGram: GOLD_PRICE_PER_GRAM,
+      });
+
+      setShowSuccessAnimation(true);
+      setTimeout(() => {
+        setShowSuccessAnimation(false);
+        setCadAmount("");
+        setGoldAmount(0);
+        toast.success(`Successfully purchased ${goldAmount.toFixed(4)}g of gold!`);
+      }, 2000);
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "Failed to complete purchase.",
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const totalAmount = parseFloat(cadAmount) || 0;
-  const fee = totalAmount * feePercentage;
+  const fee = totalAmount * FEE_PERCENTAGE;
   const netInvestment = totalAmount - fee;
 
   return (
@@ -73,7 +100,7 @@ export function BuyPage() {
             exit={{ scale: 2, opacity: 0 }}
             transition={{ duration: 1.5 }}
             className="absolute inset-0 bg-gradient-to-br from-[#FFC107]/50 to-[#FFC107]/0 flex items-center justify-center z-50 rounded-full"
-            style={{ borderRadius: '50%', width: '150vw', height: '150vh' }} // Large circle animation
+            style={{ borderRadius: "50%", width: "150vw", height: "150vh" }}
           >
             <motion.p
               initial={{ opacity: 0, y: 20 }}
@@ -97,6 +124,7 @@ export function BuyPage() {
 
         <div className="relative w-full text-center">
           <Input
+            id="cad-amount"
             type="text"
             placeholder="0.00"
             value={cadAmount}
@@ -127,14 +155,14 @@ export function BuyPage() {
           <div className="space-y-2 text-sm">
             <div className="flex justify-between">
               <span>Gold Price (per gram):</span>
-              <span className="font-medium">${goldPricePerGram.toFixed(2)}</span>
+              <span className="font-medium">${GOLD_PRICE_PER_GRAM.toFixed(2)}</span>
             </div>
             <div className="flex justify-between">
               <span>Investment Amount:</span>
               <span className="font-medium">${totalAmount.toFixed(2)}</span>
             </div>
             <div className="flex justify-between text-yellow-500">
-              <span>Fee ({(feePercentage * 100).toFixed(1)}%):</span>
+              <span>Fee ({(FEE_PERCENTAGE * 100).toFixed(1)}%):</span>
               <span className="font-medium">-${fee.toFixed(2)}</span>
             </div>
             <div className="flex justify-between pt-2 border-t border-white/10 text-white text-lg font-bold">
@@ -147,7 +175,12 @@ export function BuyPage() {
         <Button
           onClick={handleConfirmPurchase}
           className="w-full bg-[#FFC107] text-[#0D0D0D] font-bold py-3 rounded-full text-lg shadow-lg hover:bg-yellow-400 transition-colors"
-          disabled={!cadAmount || parseFloat(cadAmount) <= 0 || showSuccessAnimation}
+          disabled={
+            !cadAmount ||
+            parseFloat(cadAmount) <= 0 ||
+            showSuccessAnimation ||
+            isSubmitting
+          }
         >
           Confirm Purchase
         </Button>

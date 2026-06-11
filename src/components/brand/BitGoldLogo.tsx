@@ -21,7 +21,7 @@ export default function BitGoldLogo({
 
   return (
     <div className={`flex items-center gap-2 ${className}`}>
-      {/* Gold Coin Icon - inspired by bitgold.lovable.app (polished gold coin with 'B' symbol) */}
+      {/* Gold Coin Icon (polished gold coin with 'B' symbol) */}
       <div className={`relative ${sizeMap[size].coin}`}>
         {/* Outer gold circle with gradient */}
         <div className="absolute inset-0 rounded-full bg-gradient-to-br from-bitgold-gold to-bitgold-lightGold shadow-lg"></div>

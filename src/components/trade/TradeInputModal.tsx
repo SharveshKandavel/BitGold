@@ -10,7 +10,7 @@ interface TradeInputModalProps {
   onReviewOrder: (mode: 'Buy' | 'Sell', amount: number) => void;
 }
 
-const quickAmounts = [10, 50, 100, 'Max'];
+const quickAmounts: (number | 'Max')[] = [10, 50, 100, 'Max'];
 
 const TradeInputModal: React.FC<TradeInputModalProps> = ({ tradeMode, livePrice, onClose, onReviewOrder }) => {
   const [amount, setAmount] = useState('');

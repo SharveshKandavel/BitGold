@@ -98,6 +98,7 @@ export function PaymentMethodsPage() {
             </div>
             <div className="space-y-4">
               <Input
+                id="card-number"
                 placeholder="Card Number"
                 type="text"
                 value={newCardNumber}
@@ -105,6 +106,7 @@ export function PaymentMethodsPage() {
                 className="w-full p-3 bg-[#0D0D0D] border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:ring-[#FFC107] focus:border-[#FFC107]"
               />
               <Input
+                id="card-expiry"
                 placeholder="MM/YY"
                 type="text"
                 value={newCardExpiry}

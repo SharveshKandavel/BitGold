@@ -1,231 +1,282 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { motion, AnimatePresence } from 'framer-motion'; // Import AnimatePresence
-import { History, ArrowRight } from 'lucide-react';
+import { useMutation, useQuery } from 'convex/react';
+import { api } from '../../convex/_generated/api';
+import { motion, AnimatePresence } from 'framer-motion';
+import { History, ArrowRight, TrendingUp, Info, Package } from 'lucide-react';
 import { ResponsiveContainer, AreaChart, XAxis, YAxis, Tooltip, Area } from 'recharts';
 import Container from '../components/ui/Container';
 import Button from '../components/ui/Button';
-// import Card from '../components/ui/Card'; // Card not directly used here anymore
 import LoadingSpinner from '../components/ui/LoadingSpinner';
 import ErrorMessage from '../components/ui/ErrorMessage';
-import TradeInputModal from '../components/trade/TradeInputModal'; // Import TradeInputModal
 import { fetchLiveGoldPrice, fetchHistoricalGoldPrices } from '../lib/goldApi';
-import { toast } from 'sonner'; // Import toast for messages
+import { toast } from 'sonner';
 
-// --- Helper for chart tooltip ---
 const CustomChartTooltip = ({ active, payload, label }: any) => {
-  if (active && payload && payload.length) {
+  if (active && payload && payload.length > 0 && payload[0] != null) {
     return (
-      <div className="bg-deepBlack/90 p-2 rounded-lg border border-white/10 text-white text-xs shadow-lg">
-        <p className="font-semibold">{label}</p>
-        <p className="text-primary">${payload[0].value.toFixed(2)}</p>
+      <div className="glass p-3 rounded-2xl text-white shadow-2xl border-white/10">
+        <p className="text-[10px] font-black uppercase tracking-widest text-gray-500 mb-1">{label}</p>
+        <p className="text-sm font-bold text-gold-premium">${payload[0].value.toFixed(2)}</p>
       </div>
     );
   }
   return null;
 };
 
-const Trade: React.FC = () => {
-  const [tradeMode, setTradeMode] = useState<'Buy' | 'Sell'>('Buy');
+const TROY_OZ_TO_GRAMS = 31.1034768;
+
+interface TradeProps {
+  setActiveTab?: (tab: string) => void;
+  initialMode?: 'Buy' | 'Sell';
+}
+
+import { useCurrentUser } from '../hooks/useCurrentUser';
+
+const Trade: React.FC<TradeProps> = ({ setActiveTab, initialMode = 'Buy' }) => {
+  const user = useCurrentUser();
+  const executeBuy = useMutation(api.transactions.executeBuy);
+  const executeSell = useMutation(api.transactions.executeSell);
+  const ensureCurrentUser = useMutation(api.users.ensureCurrentUser);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [tradeMode, setTradeMode] = useState<'Buy' | 'Sell'>(initialMode);
+  
+  useEffect(() => {
+    setTradeMode(initialMode);
+  }, [initialMode]);
+
   const [activeTimeframe, setActiveTimeframe] = useState<'1H' | '1D' | '1W' | '1M' | '1Y'>('1D');
   const [priceAnimationKey, setPriceAnimationKey] = useState(0);
 
-  // Modal visibility state
-  const [showTradeInputModal, setShowTradeInputModal] = useState(false);
+  const [amount, setAmount] = useState('');
+  const quickAmounts: (number | 'Max')[] = [100, 500, 1000, 'Max'];
 
-  // Real-time price states
   const [livePrice, setLivePrice] = useState(0);
   const [priceChange, setPriceChange] = useState(0);
   const [priceChangeAmount, setPriceChangeAmount] = useState(0);
   const [isLoadingPrice, setIsLoadingPrice] = useState(true);
   const [priceError, setPriceError] = useState<string | null>(null);
 
-  // Historical data states
   const [historicalData, setHistoricalData] = useState<any[]>([]);
   const [isLoadingChart, setIsLoadingChart] = useState(true);
   const [chartError, setChartError] = useState<string | null>(null);
 
-  // --- Fetch Live Price ---
   useEffect(() => {
     const getLivePrice = async () => {
       setIsLoadingPrice(true);
-      setPriceError(null);
       try {
         const newPrice = await fetchLiveGoldPrice();
-        const oldPrice = livePrice || 2400; // Use previous state or a base
+        const oldPrice = livePrice || 2400;
         const change = ((newPrice - oldPrice) / oldPrice) * 100;
-        const changeAmount = newPrice - oldPrice;
-
         setLivePrice(newPrice);
         setPriceChange(parseFloat(change.toFixed(2)));
-        setPriceChangeAmount(parseFloat(changeAmount.toFixed(2)));
+        setPriceChangeAmount(newPrice - oldPrice);
         setPriceAnimationKey(prev => prev + 1);
       } catch (err) {
-        setPriceError("Failed to fetch live price.");
-        console.error("Error fetching live price:", err);
+        setPriceError("Failed to fetch price.");
       } finally {
         setIsLoadingPrice(false);
       }
     };
-
     getLivePrice();
-    const interval = setInterval(getLivePrice, 15000); // Poll every 15 seconds
+    const interval = setInterval(getLivePrice, 15000);
     return () => clearInterval(interval);
-  }, []); // Only run on mount
+  }, []);
 
-  // --- Fetch Historical Data for Chart ---
   useEffect(() => {
     const getHistoricalData = async () => {
       setIsLoadingChart(true);
-      setChartError(null);
       try {
         const data = await fetchHistoricalGoldPrices(activeTimeframe);
         setHistoricalData(data);
       } catch (err) {
-        setChartError(`Failed to fetch ${activeTimeframe} historical data.`);
-        console.error("Error fetching historical data:", err);
+        setChartError("Chart unavailable.");
       } finally {
         setIsLoadingChart(false);
       }
     };
-
     getHistoricalData();
-  }, [activeTimeframe]); // Re-run when activeTimeframe changes
+  }, [activeTimeframe]);
 
-  // Handle Review Order from modal
-  const handleReviewOrder = (mode: 'Buy' | 'Sell', orderAmount: number) => {
-    console.log(`Reviewing ${mode} order for $${orderAmount}`);
-    toast.info(`Reviewing ${mode} order for $${orderAmount}`, {
-      description: `Approx. ${(orderAmount / livePrice).toFixed(2)}g Gold`,
-    });
-    // Here you would navigate to a review screen or open another modal
-    setShowTradeInputModal(false); // Close modal after action
+  const pricePerGram = livePrice > 0 ? livePrice / TROY_OZ_TO_GRAMS : 0;
+  const goldWeight = useMemo(() => {
+    const numAmount = Number(amount);
+    if (isNaN(numAmount) || numAmount <= 0 || pricePerGram <= 0) return '0.0000';
+    return (numAmount / pricePerGram).toFixed(4);
+  }, [amount, pricePerGram]);
+
+  const handleQuickSelect = (v: number | 'Max') => {
+    if (v === 'Max') {
+      if (tradeMode === 'Buy') {
+        setAmount((user?.cadBalance || 0).toString());
+      } else {
+        const maxSellCad = (user?.goldBalance || 0) * pricePerGram;
+        setAmount(maxSellCad.toFixed(2));
+      }
+    } else {
+      setAmount(v.toString());
+    }
   };
 
-  const handleToggleTradeMode = (mode: 'Buy' | 'Sell') => {
-    setTradeMode(mode);
-    setShowTradeInputModal(true); // Show modal when Buy/Sell button is clicked
+  const handleConfirmOrder = async () => {
+    const cadAmount = Number(amount);
+    if (isNaN(cadAmount) || cadAmount <= 0) return toast.error('Enter amount');
+    if (pricePerGram <= 0) return toast.error('Price unavailable');
+
+    setIsSubmitting(true);
+    try {
+      let userId = user?._id;
+      if (!userId) {
+        const createdId = await ensureCurrentUser({});
+        if (!createdId) throw new Error('Sign in required');
+        userId = createdId;
+      }
+
+      const goldAmount = cadAmount / pricePerGram;
+      
+      if (tradeMode === 'Buy') {
+        await executeBuy({ userId, cadAmount, goldAmount, pricePerGram });
+        toast.success(`Success! Purchased ${goldAmount.toFixed(4)}g gold.`);
+      } else {
+        await executeSell({ userId, cadAmount, goldAmount, pricePerGram });
+        toast.success(`Success! Sold ${goldAmount.toFixed(4)}g gold.`);
+      }
+      
+      setAmount('');
+    } catch (error: any) {
+      toast.error(error.message);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
-    <Container className="pt-4 pb-[104px] bg-deepBlack min-h-screen relative">
+    <Container className="pt-4 pb-24 bg-deepBlack h-full overflow-y-auto hide-scrollbar text-white font-sans flex flex-col">
       {/* Header */}
-      <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="flex justify-between items-center p-4 -mx-4">
-        <h1 className="text-white font-light text-xl tracking-tight">Market</h1>
-        <Button variant="ghost" className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-full w-10 h-10 p-0 flex items-center justify-center">
-          <History size={20} className="text-white" />
-        </Button>
-      </motion.div>
+      <div className="flex justify-between items-center px-6 py-4">
+        <h1 className="text-xl font-bold tracking-tight">Market</h1>
+        <button className="w-10 h-10 rounded-full glass flex items-center justify-center text-gray-400 hover:text-white" onClick={() => setActiveTab && setActiveTab('Activity')}>
+          <History size={20} />
+        </button>
+      </div>
 
-      {/* Live Price Display */}
-      <div className="text-center mt-4">
+      {/* Price Display */}
+      <div className="text-center mt-2 px-6">
         {isLoadingPrice ? (
-          <div className="h-12 flex items-center justify-center">
-            <LoadingSpinner size={32} className="text-primary" />
-          </div>
-        ) : priceError ? (
-          <ErrorMessage message={priceError} />
+          <div className="h-16 flex items-center justify-center"><LoadingSpinner /></div>
         ) : (
-          <>
-            <motion.p
-              key={priceAnimationKey}
-              initial={{ scale: 1 }}
-              animate={{ scale: [1, 1.02, 1] }}
-              transition={{ duration: 0.3, ease: "easeOut" }}
-              className="text-4xl font-thin text-white tracking-tighter"
-            >
-              ${livePrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-            </motion.p>
-            <p className={`text-sm font-medium mt-2 bg-opacity-10 px-3 py-1 rounded-full inline-block ${
-                priceChange >= 0 ? 'text-green-400 bg-green-500/10' : 'text-red-400 bg-red-500/10'
-              }`}
-            >
-              {priceChange > 0 ? '+' : ''}{priceChange}% (${priceChangeAmount.toFixed(2)})
-            </p>
-          </>
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+            <p className="text-[10px] text-gray-500 uppercase tracking-[0.4em] font-black mb-1">XAU/USD (Per Gram)</p>
+            <motion.h2 key={priceAnimationKey} className="text-5xl font-light tracking-tighter text-gold-premium">
+              ${pricePerGram.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            </motion.h2>
+            <div className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-[10px] font-black mt-3 ${priceChange >= 0 ? 'bg-green-500/10 text-green-400' : 'bg-red-500/10 text-red-400'}`}>
+              <TrendingUp size={12} />
+              <span>{priceChange >= 0 ? '+' : ''}{priceChange}%</span>
+            </div>
+          </motion.div>
         )}
       </div>
 
-      {/* Buy/Sell Segmented Control - Now placed below chart and timeframes with animation */}
-      <motion.div className="relative flex bg-white/5 backdrop-blur-xl border border-white/10 rounded-full p-1 mx-4 mb-8 mt-8"> {/* Added mt-8 and mb-8 for spacing */}
-        <motion.span
-          layoutId="tradeModeIndicator"
-          className={`absolute top-0 bottom-0 rounded-full ${tradeMode === 'Buy' ? 'left-0' : 'right-0'} bg-primary`}
-          style={{ width: 'calc(50% - 4px)', margin: '2px' }} // Adjust width and margin to fit within padding of parent div
-          transition={{ type: "tween", duration: 0.2 }}
-        />
-        <button
-          onClick={() => handleToggleTradeMode('Buy')}
-          className={`flex-1 py-3 text-base font-semibold transition-colors relative z-10 ${
-            tradeMode === 'Buy' ? 'text-deepBlack' : 'text-gray-400'
-          }`}
-        >
-          Buy
-        </button>
-        <button
-          onClick={() => handleToggleTradeMode('Sell')}
-          className={`flex-1 py-3 text-base font-semibold transition-colors relative z-10 ${
-            tradeMode === 'Sell' ? 'text-deepBlack' : 'text-gray-400'
-          }`}
-        >
-          Sell
-        </button>
-      </motion.div>
-
-      {/* The 'Liquid' Chart */}
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="h-56 w-full my-8">
-        {isLoadingChart ? (
-          <div className="h-full flex items-center justify-center">
-            <LoadingSpinner size={48} className="text-primary" />
-          </div>
-        ) : chartError ? (
-          <ErrorMessage message={chartError} />
-        ) : (
-          <div style={{ position: 'relative', height: '100%' }}>
+      {/* Fluid Chart */}
+      <div className="h-48 w-full mt-6 px-4">
+        <div className="h-full w-full relative">
+          {isLoadingChart ? (
+             <div className="absolute inset-0 flex items-center justify-center"><LoadingSpinner /></div>
+          ) : (
             <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={historicalData} margin={{ top: 10, right: 0, left: 0, bottom: 0 }}>
-              <defs>
-                <linearGradient id="chartColor" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#D4AF37" stopOpacity={0.2} />
-                  <stop offset="95%" stopColor="#D4AF37" stopOpacity={0} />
-                </linearGradient>
-              </defs>
-              <XAxis dataKey="date" hide />
-              <YAxis hide domain={['dataMin - 10', 'dataMax + 10']} />
-              <Tooltip content={<CustomChartTooltip />} />
-              <Area type="monotone" dataKey="price" stroke="#D4AF37" fillOpacity={1} fill="url(#chartColor)" strokeWidth={2} />
-            </AreaChart>
-          </ResponsiveContainer>
-          </div>
-        )}
-      </motion.div>
+              <AreaChart data={historicalData}>
+                <defs>
+                  <linearGradient id="chartGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#D4AF37" stopOpacity={0.3} />
+                    <stop offset="95%" stopColor="#D4AF37" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <XAxis dataKey="date" hide />
+                <YAxis hide domain={['dataMin - 5', 'dataMax + 5']} />
+                <Tooltip content={<CustomChartTooltip />} />
+                <Area type="monotone" dataKey="price" stroke="#D4AF37" strokeWidth={3} fill="url(#chartGradient)" />
+              </AreaChart>
+            </ResponsiveContainer>
+          )}
+        </div>
+      </div>
 
       {/* Timeframes */}
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="flex justify-center gap-2 mb-8">
-        {['1H', '1D', '1W', '1M', '1Y'].map(timeframe => (
-          <motion.button
-            key={timeframe}
-            className={`px-4 py-1 rounded-full text-sm font-medium transition-colors ${
-              activeTimeframe === timeframe ? 'bg-primary text-deepBlack' : 'bg-white/5 text-gray-300 backdrop-blur-md border border-white/10'
+      <div className="flex justify-center gap-2 mt-4">
+        {(['1H', '1D', '1W', '1M', '1Y'] as const).map(tf => (
+          <button
+            key={tf}
+            onClick={() => setActiveTimeframe(tf)}
+            className={`px-4 py-1.5 rounded-full text-[10px] font-bold tracking-widest uppercase transition-all ${
+              activeTimeframe === tf ? 'bg-primary text-deepBlack' : 'glass text-gray-500'
             }`}
-            onClick={() => setActiveTimeframe(timeframe)}
-            whileTap={{ scale: 0.95 }}
           >
-            {timeframe}
-          </motion.button>
+            {tf}
+          </button>
         ))}
-      </motion.div>
+      </div>
 
-      {/* Trade Input Modal */}
-      <AnimatePresence>
-        {showTradeInputModal && (
-          <TradeInputModal
-            tradeMode={tradeMode}
-            livePrice={livePrice}
-            onClose={() => setShowTradeInputModal(false)}
-            onReviewOrder={handleReviewOrder}
-          />
-        )}
-      </AnimatePresence>
+      {/* Trade Terminal */}
+      <div className="mt-8 px-6 pb-32">
+        <div className="p-1 glass rounded-2xl flex mb-6">
+          <button 
+            onClick={() => setTradeMode('Buy')}
+            className={`flex-1 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${tradeMode === 'Buy' ? 'bg-primary text-deepBlack shadow-lg shadow-gold/20' : 'text-gray-500'}`}
+          >
+            Buy Gold
+          </button>
+          <button 
+            onClick={() => setTradeMode('Sell')}
+            className={`flex-1 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${tradeMode === 'Sell' ? 'bg-primary text-deepBlack shadow-lg shadow-gold/20' : 'text-gray-500'}`}
+          >
+            Sell Gold
+          </button>
+        </div>
+
+        <div className="text-center mb-8">
+           <div className="flex items-center justify-center gap-2 mb-2">
+             <span className="text-3xl font-light text-gray-600">$</span>
+             <input 
+               type="text" 
+               value={amount} 
+               onChange={(e) => /^\d*\.?\d*$/.test(e.target.value) && setAmount(e.target.value)}
+               placeholder="0.00"
+               className="bg-transparent text-5xl font-light tracking-tighter focus:outline-none w-48 text-center placeholder-white/5"
+             />
+           </div>
+           <p className="text-gold-premium text-xs font-bold uppercase tracking-widest flex items-center justify-center gap-2">
+             <Package size={14} />
+             ≈ {goldWeight}g Gold
+           </p>
+        </div>
+
+        <div className="grid grid-cols-4 gap-2 mb-8">
+          {quickAmounts.map(v => (
+            <button 
+              key={v} 
+              onClick={() => handleQuickSelect(v)}
+              className="py-3 rounded-xl glass border border-white/5 text-[10px] font-bold text-gray-400 hover:text-white transition-all"
+            >
+              {v === 'Max' ? 'MAX' : `$${v}`}
+            </button>
+          ))}
+        </div>
+
+        <Button 
+          variant="premium" 
+          className="w-full py-5 rounded-[1.5rem]" 
+          onClick={handleConfirmOrder}
+          disabled={!amount || isSubmitting || pricePerGram <= 0}
+        >
+          {isSubmitting ? 'Finalizing Order...' : `Confirm ${tradeMode} Order`}
+          <ArrowRight size={18} className="ml-2" />
+        </Button>
+        
+        <div className="mt-4 flex items-center justify-center gap-2 text-gray-600 text-[10px] font-bold uppercase tracking-widest">
+           <Info size={12} />
+           <span>Orders filled at best available market price</span>
+        </div>
+      </div>
     </Container>
   );
 };

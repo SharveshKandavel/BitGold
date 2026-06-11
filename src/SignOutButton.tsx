@@ -1,18 +1,21 @@
 "use client";
-import { useAuthActions } from "@convex-dev/auth/react";
-import { useConvexAuth } from "convex/react";
-import Button from "./components/ui/Button"; // Import the new Button component
+import { useClerk } from "@clerk/clerk-react";
+import Button from "./components/ui/Button";
 
 export function SignOutButton() {
-  const { isAuthenticated } = useConvexAuth();
-  const { signOut } = useAuthActions();
+  const clerk = useClerk();
 
-  if (!isAuthenticated) {
-    return null;
-  }
+  const handleSignOut = () => {
+    if (localStorage.getItem('bitgold_demo_mode') === 'true') {
+      localStorage.removeItem('bitgold_demo_mode');
+      window.location.reload();
+    } else {
+      clerk.signOut();
+    }
+  };
 
   return (
-    <Button variant="secondary" onClick={() => void signOut()}>
+    <Button variant="secondary" onClick={handleSignOut}>
       Sign out
     </Button>
   );

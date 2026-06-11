@@ -1,11 +1,19 @@
+/// <reference types="vitest/globals" />
 import { render, screen } from '@testing-library/react';
-import { Navbar } from '../Navbar';
-import { describe, it, expect } from 'vitest';
+import Navigation from '../../Navigation';
+import { describe, it, expect, vi } from 'vitest'; // Import vi for mocking
+import React from 'react';
 
-describe('Navbar', () => {
-  it('renders the logo', () => {
-    render(<Navbar currentPage="home" onPageChange={() => {}} />);
-    const logo = screen.getByText('🪙');
-    expect(logo).toBeInTheDocument();
+// Mock the NavLink component to render nothing
+vi.mock('../NavLink', () => ({
+  __esModule: true,
+  default: () => <></>, // Render a React Fragment
+}));
+
+describe('Navigation', () => {
+  it('renders the navigation items', () => {
+    render(<Navigation activeTab="Home" setActiveTab={() => {}} />);
+    const homeButton = screen.getByTestId('home-nav-item');
+    expect(homeButton).toBeInTheDocument();
   });
 });

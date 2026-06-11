@@ -19,7 +19,7 @@ export function PortfolioPage() {
   ];
 
   return (
-    <Container className="py-8">
+    <Container className="py-8 font-sans">
       <div className="space-y-8">
         {/* Header */}
         <div>

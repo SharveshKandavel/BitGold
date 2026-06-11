@@ -9,9 +9,12 @@
  */
 
 import type * as auth from "../auth.js";
+import type * as automation from "../automation.js";
+import type * as banking from "../banking.js";
 import type * as http from "../http.js";
 import type * as index from "../index.js";
 import type * as router from "../router.js";
+import type * as social from "../social.js";
 import type * as transactions from "../transactions.js";
 import type * as twoFactor from "../twoFactor.js";
 import type * as users from "../users.js";
@@ -24,9 +27,12 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   auth: typeof auth;
+  automation: typeof automation;
+  banking: typeof banking;
   http: typeof http;
   index: typeof index;
   router: typeof router;
+  social: typeof social;
   transactions: typeof transactions;
   twoFactor: typeof twoFactor;
   users: typeof users;

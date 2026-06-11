@@ -1,8 +1,8 @@
-import React, { HTMLAttributes } from 'react';
+import React from 'react';
 import { cn } from '../../lib/utils';
-import { motion } from 'framer-motion'; // Import motion
+import { motion, HTMLMotionProps } from 'framer-motion'; // Import motion
 
-interface CardProps extends HTMLAttributes<HTMLDivElement> {
+interface CardProps extends HTMLMotionProps<"div"> {
   // Additional props can be added here if needed
 }
 

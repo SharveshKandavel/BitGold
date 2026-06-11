@@ -22,7 +22,7 @@ const Navigation: React.FC<NavigationProps> = ({ activeTab, setActiveTab }) => {
         {navItems.map((item) => (
           <motion.button
             key={item.name}
-            id={`${item.page.toLowerCase()}-nav-item`} // Dynamically set ID based on page name
+            data-testid={`${item.page.toLowerCase()}-nav-item`} // Dynamically set ID based on page name
             onClick={() => setActiveTab(item.page)}
             className="flex flex-col items-center"
             whileTap={{ scale: 0.9 }}

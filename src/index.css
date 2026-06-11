@@ -134,10 +134,73 @@ body {
   }
 }
 
-.shimmer-button {
-  background: linear-gradient(to right, #FFC107 0%, #FFF5A3 20%, #FFC107 40%, #FFC107 100%);
-  background-size: 1000px 100%;
-  animation: shimmer 2s infinite linear;
+/* Premium UI Utilities */
+.glass {
+  @apply bg-white/5 backdrop-blur-xl border border-white/10;
+}
+
+.glass-dark {
+  @apply bg-black/40 backdrop-blur-2xl border border-white/5;
+}
+
+.text-gold-premium {
+  background: linear-gradient(72deg, #D4AF37 0%, #F7E98D 25%, #D4AF37 50%, #B8860B 75%, #D4AF37 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-size: 200% auto;
+  animation: gold-shimmer 4s linear infinite;
+}
+
+@keyframes gold-shimmer {
+  to {
+    background-position: 200% center;
+  }
+}
+
+.bg-gold-card-premium {
+  background: linear-gradient(135deg, #BF953F 0%, #FCF6BA 25%, #B38728 50%, #F5E7B2 75%, #AA771C 100%);
+  background-size: 200% 200%;
+  animation: gold-shimmer-bg 8s ease infinite alternate;
+}
+
+@keyframes gold-shimmer-bg {
+  0% {
+    background-position: 0% 50%;
+  }
+  100% {
+    background-position: 100% 50%;
+  }
+}
+
+.gold-border {
+  position: relative;
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(20px);
+}
+
+.gold-border::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1.5px;
+  background: linear-gradient(72deg, #D4AF37, #F7E98D, #B8860B);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+.shadow-gold-soft {
+  box-shadow: 0 10px 30px -10px rgba(212, 175, 55, 0.2);
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 
 

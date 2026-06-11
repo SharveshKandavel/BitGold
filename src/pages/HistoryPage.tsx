@@ -72,7 +72,7 @@ export function HistoryPage() {
     .reduce((sum, t) => sum + t.goldAdded, 0);
 
   return (
-    <Container className="py-8">
+    <Container className="py-8 font-sans">
       <div className="space-y-8">
         {/* Header */}
         <div>

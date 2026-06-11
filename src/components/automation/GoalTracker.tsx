@@ -61,7 +61,7 @@ const GoalTracker: React.FC = () => {
   };
 
   const CustomTooltip = ({ active, payload }: any) => {
-    if (active && payload && payload.length && payload[0] && payload[0].payload) {
+    if (active && payload && payload.length > 0 && payload[0] != null && payload[0].payload) {
       const itemPayload = payload[0].payload; // Get the inner payload
       if (itemPayload && itemPayload.goal) { // Check itemPayload and its goal property
         const goal = itemPayload.goal;

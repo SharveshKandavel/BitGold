@@ -9,6 +9,8 @@ export default defineSchema({
     picture: v.optional(v.string()),
     tokenIdentifier: v.string(),
     balance: v.optional(v.number()),
+    cadBalance: v.optional(v.number()),
+    goldBalance: v.optional(v.number()),
     is_verified: v.optional(v.boolean()),
     totpSecret: v.optional(v.string()),
     is2FAEnabled: v.optional(v.boolean()),
@@ -19,10 +21,11 @@ export default defineSchema({
   transactions: defineTable({
     userId: v.id("users"),
     type: v.string(), // "buy", "sell", "deposit"
-    amount: v.number(),
-    goldAmount: v.optional(v.number()),
+    cadAmount: v.number(),
+    goldAmount: v.number(),
+    pricePerGram: v.number(),
     status: v.string(),
-    date: v.number(),
+    createdAt: v.number(),
   }).index("by_user", ["userId"]),
 
   // 3. Automation (Phase 2)
