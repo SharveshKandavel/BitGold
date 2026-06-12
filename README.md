@@ -1,12 +1,13 @@
 # 💎 BitGold — Premium Physical Gold Investment Ecosystem 
 
-[![Live Demo](https://img.shields.io/badge/Live_Demo-Access_Here-gold?style=for-the-badge&logo=vercel&logoColor=white)](YOUR_DEMO_LINK_HERE)
+[![Live Demo](https://img.shields.io/badge/Live_Demo-Access_Here-gold?style=for-the-badge&logo=vercel&logoColor=white)](https://bit-gold-ce7b.vercel.app/)
 
 BitGold is a high-fidelity full-stack fintech platform designed to bridge the gap between digital convenience and physical wealth. By leveraging real-time market data, automated investment algorithms, and secure cloud infrastructure, BitGold empowers users to build a tangible gold reserve effortlessly.
-I
+
 Built with a **Gold-Standard** tech stack, BitGold transforms daily transactions into a step toward physical financial sovereignty.
 
-**Real-World Gold Market Integration:** BitGold fetches live, real-world **XAU/USD** gold price index feeds. Every transaction, simulation, automated round-up, and savings goal is directly pegged to real-time global spot gold exchange rates.
+> [!IMPORTANT]
+> **Real-World Gold Market Integration:** BitGold fetches live, real-world **XAU/USD** gold price index feeds. Every transaction, simulation, automated round-up, and savings goal is directly pegged to real-time global spot gold exchange rates.
 
 ---
 
