@@ -22,8 +22,8 @@ export default function SignInPage({ onEnterDemoMode, onBackToDisclaimer }: Sign
     const publishableKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
     if (!publishableKey) {
       import("sonner").then(({ toast }) => {
-        toast.error("Cloud Authentication Unavailable", {
-          description: "VITE_CLERK_PUBLISHABLE_KEY is not configured in .env.local. Please use the Instant Demo Account.",
+        toast.error("Cloud Login Unavailable", {
+          description: "Secure cloud access is not configured on this server. Please enter as a guest using the Instant Demo Account option.",
           duration: 5000,
         });
       });

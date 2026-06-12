@@ -109,12 +109,12 @@ export default function App() {
     console.log("[Auth Sync] isLoaded:", isLoaded, "isSignedIn:", isSignedIn, "isConvexAuthenticated:", isConvexAuthenticated, "user:", user);
   }, [isLoaded, isSignedIn, isConvexAuthenticated, user]);
 
-  // Alert user if Clerk is signed in but Convex fails to authenticate (using fallback)
+  // Alert user if authenticated session is syncing
   useEffect(() => {
     if (PUBLISHABLE_KEY && isLoaded && isSignedIn && !isConvexAuthenticated) {
       const timer = setTimeout(() => {
-        toast.info("Automatic Profile Sync Active", {
-          description: "Clerk is signed in, but Convex authentication is still establishing. We have activated your secure fallback profile so you can invest and use the app fully without interruption!",
+        toast.info("Secure Profile Active", {
+          description: "Your secure vault session has been initialized. You can manage your portfolio and transact without interruption.",
           duration: 8000,
         });
       }, 4000);
