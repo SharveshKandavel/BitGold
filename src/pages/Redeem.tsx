@@ -25,7 +25,7 @@ const products: Product[] = [
     name: '24K 1g Gold Chip',
     type: '1g_bar',
     weight: '1 gram',
-    image: 'https://images.unsplash.com/photo-1620288627228-ee1578f7e268?q=80&w=1932&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+    image: '/gold_chip_1g.png',
     priceEstimate: '$80 - $90',
   },
   {
@@ -33,7 +33,7 @@ const products: Product[] = [
     name: '5g Minted Gold Coin',
     type: '5g_coin',
     weight: '5 grams',
-    image: 'https://images.unsplash.com/photo-1610486800762-c651b75c8b21?q=80&w=1932&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+    image: '/gold_coin_5g.png',
     priceEstimate: '$400 - $450',
   },
   {
@@ -41,7 +41,7 @@ const products: Product[] = [
     name: '10g Swiss Gold Bar',
     type: '10g_swiss_bar',
     weight: '10 grams',
-    image: 'https://images.unsplash.com/photo-1620288627228-ee1578f7e268?q=80&w=1932&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+    image: '/gold_bar_10g.png',
     priceEstimate: '$800 - $900',
   },
 ];

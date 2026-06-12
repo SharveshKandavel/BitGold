@@ -5,6 +5,8 @@ import { useQuery, useMutation } from 'convex/react';
 import { api } from '../../../convex/_generated/api';
 import { toast } from 'sonner';
 import { Calendar, Trash2, Play } from 'lucide-react';
+import { useGold } from '../../context/GoldContext';
+import { useAuth } from '@clerk/clerk-react';
 
 type Frequency = 'daily' | 'weekly' | 'monthly';
 
@@ -12,6 +14,11 @@ import { useCurrentUser } from '../../hooks/useCurrentUser';
 
 const SipConfig: React.FC = () => {
   const user = useCurrentUser();
+  const { isDemoMode } = useGold();
+  const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
+  const clerkAuth = PUBLISHABLE_KEY ? useAuth() : { isSignedIn: true, isLoaded: true };
+  const isAuth = isDemoMode || (clerkAuth.isLoaded && clerkAuth.isSignedIn);
+
   const recurringBuys = useQuery(api.automation.getRecurringBuys, user ? { userId: user._id } : "skip");
   const createRecurringBuy = useMutation(api.automation.createRecurringBuy);
   const deleteRecurringBuy = useMutation(api.automation.deleteRecurringBuy);
@@ -39,8 +46,12 @@ const SipConfig: React.FC = () => {
   const activePlan = recurringBuys && recurringBuys.length > 0 ? recurringBuys[0] : null;
 
   const handleActivatePlan = async () => {
-    if (!user) {
+    if (!isAuth) {
       toast.error("Please sign in to schedule recurring buys.");
+      return;
+    }
+    if (!user) {
+      toast.error("Synchronizing account profile... Please try again in a moment.");
       return;
     }
     setIsSubmitting(true);

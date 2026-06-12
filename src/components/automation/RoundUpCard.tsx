@@ -6,6 +6,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Sparkles } from 'lucide-react';
 import Card from '../ui/Card';
 import { toast } from 'sonner';
+import { useGold } from '../../context/GoldContext';
+import { useAuth } from '@clerk/clerk-react';
 
 interface Transaction {
   id: number;
@@ -20,6 +22,11 @@ import { useCurrentUser } from '../../hooks/useCurrentUser';
 
 const RoundUpCard: React.FC = () => {
   const user = useCurrentUser();
+  const { isDemoMode } = useGold();
+  const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
+  const clerkAuth = PUBLISHABLE_KEY ? useAuth() : { isSignedIn: true, isLoaded: true };
+  const isAuth = isDemoMode || (clerkAuth.isLoaded && clerkAuth.isSignedIn);
+
   const executeBuy = useMutation(api.transactions.executeBuy);
   const settings = useQuery(api.automation.getRoundUpSettings, user ? { userId: user._id } : "skip");
   const updateSettings = useMutation(api.automation.updateRoundUpSettings);
@@ -121,8 +128,12 @@ const RoundUpCard: React.FC = () => {
             isEnabled ? 'bg-primary' : 'bg-gray-700'
           }`}
           onClick={async () => {
-            if (!user) {
+            if (!isAuth) {
               toast.error("Please sign in to enable round-ups.");
+              return;
+            }
+            if (!user) {
+              toast.error("Synchronizing account profile... Please try again in a moment.");
               return;
             }
             const nextState = !isEnabled;

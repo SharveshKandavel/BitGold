@@ -56,7 +56,11 @@ export default defineSchema({
   bank_accounts: defineTable({
     userId: v.id("users"),
     bank_name: v.string(),
+    account_name: v.string(),
+    routing_number: v.string(),
+    account_number: v.string(),
     last4: v.string(),
+    balance: v.number(),
     is_verified: v.boolean(),
     type: v.union(v.literal("checking"), v.literal("savings")), // Corrected type
   }).index("by_user", ["userId"]),

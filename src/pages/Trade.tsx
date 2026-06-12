@@ -201,20 +201,7 @@ const Trade: React.FC<TradeProps> = ({ setActiveTab, initialMode = 'Buy' }) => {
         </div>
       </div>
 
-      {/* Timeframes */}
-      <div className="flex justify-center gap-2 mt-4">
-        {(['1H', '1D', '1W', '1M', '1Y'] as const).map(tf => (
-          <button
-            key={tf}
-            onClick={() => setActiveTimeframe(tf)}
-            className={`px-4 py-1.5 rounded-full text-[10px] font-bold tracking-widest uppercase transition-all ${
-              activeTimeframe === tf ? 'bg-primary text-deepBlack' : 'glass text-gray-500'
-            }`}
-          >
-            {tf}
-          </button>
-        ))}
-      </div>
+
 
       {/* Trade Terminal */}
       <div className="mt-8 px-6 pb-32">

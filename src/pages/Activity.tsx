@@ -57,31 +57,67 @@ const Activity: React.FC<ActivityProps> = ({ setActiveTab }) => {
             <p className="text-center text-gray-500">Sign in to view your activity.</p>
           </Card>
         ) : transactions && transactions.length > 0 ? (
-          transactions.map((tx) => (
-            <motion.div key={tx._id} variants={itemVariants}>
-              <Card>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center">
-                    {tx.type === 'buy' ? (
-                      <CirclePlus className="text-green-500 mr-4" />
-                    ) : (
-                      <CircleMinus className="text-red-500 mr-4" />
-                    )}
-                    <div>
-                      <p className="font-semibold capitalize">{tx.type} Gold</p>
-                      <p className="text-sm text-gray-400">
-                        {new Date(tx.createdAt).toLocaleString()}
-                      </p>
+          transactions.map((tx) => {
+            const isBuy = tx.type === 'buy';
+            const isSell = tx.type === 'sell';
+            const isDeposit = tx.type === 'deposit';
+            const isWithdraw = tx.type === 'withdraw';
+            const isRedeem = tx.type === 'redeem';
+
+            let icon = <CirclePlus className="text-green-500 mr-4" />;
+            let title = "Transaction";
+            let cadDisplay = `$${tx.cadAmount.toFixed(2)}`;
+            let goldDisplay = `${tx.goldAmount.toFixed(4)}g`;
+
+            if (isBuy) {
+              icon = <CirclePlus className="text-green-500 mr-4" />;
+              title = "Bought Gold";
+              cadDisplay = `$${tx.cadAmount.toFixed(2)}`;
+              goldDisplay = `+${tx.goldAmount.toFixed(4)}g`;
+            } else if (isSell) {
+              icon = <CircleMinus className="text-red-500 mr-4" />;
+              title = "Sold Gold";
+              cadDisplay = `$${tx.cadAmount.toFixed(2)}`;
+              goldDisplay = `-${tx.goldAmount.toFixed(4)}g`;
+            } else if (isDeposit) {
+              icon = <CirclePlus className="text-emerald-400 mr-4" />;
+              title = "Deposited Funds";
+              cadDisplay = `+$${tx.cadAmount.toFixed(2)}`;
+              goldDisplay = "";
+            } else if (isWithdraw) {
+              icon = <CircleMinus className="text-amber-500 mr-4" />;
+              title = "Withdrew Funds";
+              cadDisplay = `-$${tx.cadAmount.toFixed(2)}`;
+              goldDisplay = "";
+            } else if (isRedeem) {
+              icon = <CircleMinus className="text-red-400 mr-4" />;
+              title = "Redeemed Gold";
+              cadDisplay = "Redemption";
+              goldDisplay = `-${tx.goldAmount.toFixed(4)}g`;
+            }
+
+            return (
+              <motion.div key={tx._id} variants={itemVariants}>
+                <Card>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center font-sans">
+                      {icon}
+                      <div>
+                        <p className="font-semibold">{title}</p>
+                        <p className="text-sm text-gray-400">
+                          {new Date(tx.createdAt).toLocaleString()}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="text-right font-sans">
+                      {cadDisplay && <p className="font-semibold">{cadDisplay}</p>}
+                      {goldDisplay && <p className="text-sm text-gray-400">{goldDisplay}</p>}
                     </div>
                   </div>
-                  <div className="text-right">
-                    <p className="font-semibold">${tx.cadAmount.toFixed(2)}</p>
-                    <p className="text-sm text-gray-400">{tx.goldAmount.toFixed(4)}g</p>
-                  </div>
-                </div>
-              </Card>
-            </motion.div>
-          ))
+                </Card>
+              </motion.div>
+            );
+          })
         ) : (
           <Card>
             <p className="text-center text-gray-500">No transactions yet.</p>

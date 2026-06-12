@@ -9,6 +9,7 @@ import { Bell, ArrowUp, ArrowDown, ShoppingCart, Lock, BarChart, TrendingUp, Shi
 import Button from "../components/ui/Button";
 import Card from "../components/ui/Card";
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip } from 'recharts';
+import { useUser } from '@clerk/clerk-react';
 
 export interface HomeProps {
   setActiveTab?: (tab: string) => void;
@@ -32,6 +33,11 @@ const fadeInUp: Variants = {
 
 export const Home: React.FC<HomeProps> = ({ setActiveTab, navigateToTrade, navigateToVault }) => {
   const user = useCurrentUser();
+  const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
+  const { user: clerkUser } = PUBLISHABLE_KEY ? useUser() : { user: null };
+  const dbName = user?.name && user.name !== "New User" ? user.name : user?.email;
+  const clerkName = clerkUser?.fullName || clerkUser?.primaryEmailAddress?.emailAddress;
+  const displayName = dbName || clerkName || 'Valued Member';
   const goals = useQuery(api.automation.getSavingsGoals, user ? { userId: user._id } : "skip");
   const recurringBuys = useQuery(api.automation.getRecurringBuys, user ? { userId: user._id } : "skip");
   const roundUpSettings = useQuery(api.automation.getRoundUpSettings, user ? { userId: user._id } : "skip");
@@ -131,7 +137,7 @@ export const Home: React.FC<HomeProps> = ({ setActiveTab, navigateToTrade, navig
             </div>
             <div>
               <p className="text-[10px] text-gray-500 uppercase tracking-[0.2em] font-bold">Welcome back</p>
-              <p className="text-sm font-medium">{user?.name || 'Valued Member'}</p>
+              <p className="text-sm font-medium">{displayName}</p>
             </div>
           </div>
           <div className="flex gap-2">

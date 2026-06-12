@@ -17,17 +17,98 @@ export const linkBankAccount = mutation({
   args: {
     userId: v.id("users"),
     bank_name: v.string(),
-    last4: v.string(),
+    account_name: v.string(),
+    routing_number: v.string(),
+    account_number: v.string(),
     type: v.union(v.literal("checking"), v.literal("savings")),
   },
   handler: async (ctx, args) => {
+    const last4 = args.account_number.slice(-4) || "0000";
     return await ctx.db.insert("bank_accounts", {
       userId: args.userId,
       bank_name: args.bank_name,
-      last4: args.last4,
+      account_name: args.account_name,
+      routing_number: args.routing_number,
+      account_number: args.account_number,
+      last4,
+      balance: 10000, // New account starts with 10K!
       is_verified: true, // Auto-verify for demo purposes
       type: args.type,
     });
+  },
+});
+
+export const deleteBankAccount = mutation({
+  args: {
+    bankAccountId: v.id("bank_accounts"),
+  },
+  handler: async (ctx, args) => {
+    await ctx.db.delete(args.bankAccountId);
+  },
+});
+
+export const transferFunds = mutation({
+  args: {
+    userId: v.id("users"),
+    bankAccountId: v.id("bank_accounts"),
+    amount: v.number(),
+    direction: v.union(v.literal("deposit"), v.literal("withdraw")), // deposit: bank -> app, withdraw: app -> bank
+  },
+  handler: async (ctx, args) => {
+    const user = await ctx.db.get(args.userId);
+    if (!user) throw new Error("User not found");
+
+    const bankAccount = await ctx.db.get(args.bankAccountId);
+    if (!bankAccount) throw new Error("Bank account not found");
+
+    const appBalance = user.cadBalance ?? 0;
+    const bankBalance = bankAccount.balance;
+
+    if (args.direction === "deposit") {
+      if (bankBalance < args.amount) {
+        throw new Error(`Insufficient funds in bank account. Available: $${bankBalance.toLocaleString()}`);
+      }
+      // Deduct from bank, add to app
+      await ctx.db.patch(args.bankAccountId, {
+        balance: bankBalance - args.amount,
+      });
+      await ctx.db.patch(args.userId, {
+        cadBalance: appBalance + args.amount,
+      });
+      
+      // Add transaction
+      await ctx.db.insert("transactions", {
+        userId: args.userId,
+        type: "deposit",
+        cadAmount: args.amount,
+        goldAmount: 0,
+        pricePerGram: 0,
+        status: "completed",
+        createdAt: Date.now(),
+      });
+    } else {
+      if (appBalance < args.amount) {
+        throw new Error(`Insufficient funds in BitGold reserve. Available: $${appBalance.toLocaleString()}`);
+      }
+      // Add to bank, deduct from app
+      await ctx.db.patch(args.bankAccountId, {
+        balance: bankBalance + args.amount,
+      });
+      await ctx.db.patch(args.userId, {
+        cadBalance: appBalance - args.amount,
+      });
+      
+      // Add transaction
+      await ctx.db.insert("transactions", {
+        userId: args.userId,
+        type: "withdraw",
+        cadAmount: args.amount,
+        goldAmount: 0,
+        pricePerGram: 0,
+        status: "completed",
+        createdAt: Date.now(),
+      });
+    }
   },
 });
 

@@ -1,20 +1,12 @@
-# 💎 BitGold — Premium Physical Gold Investment Ecosystem
+# 💎 BitGold — Premium Physical Gold Investment Ecosystem 
 
 [![Live Demo](https://img.shields.io/badge/Live_Demo-Access_Here-gold?style=for-the-badge&logo=vercel&logoColor=white)](YOUR_DEMO_LINK_HERE)
 
-[![React Version](https://img.shields.io/badge/React-19.0.0-blue?logo=react&logoColor=white)](https://react.dev/)
-[![Convex Backend](https://img.shields.io/badge/Convex-1.31.7-orange?logo=convex&logoColor=white)](https://convex.dev/)
-[![Clerk Auth](https://img.shields.io/badge/Clerk-5.60.0-purple?logo=clerk&logoColor=white)](https://clerk.com/)
-[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.4.19-38B2AC?logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
-[![Sentry Telemetry](https://img.shields.io/badge/Sentry-10.38.0-indigo?logo=sentry&logoColor=white)](https://sentry.io/)
-[![License](https://img.shields.io/badge/License-MIT-green)](LICENSE)
-
 BitGold is a high-fidelity full-stack fintech platform designed to bridge the gap between digital convenience and physical wealth. By leveraging real-time market data, automated investment algorithms, and secure cloud infrastructure, BitGold empowers users to build a tangible gold reserve effortlessly.
-
+I
 Built with a **Gold-Standard** tech stack, BitGold transforms daily transactions into a step toward physical financial sovereignty.
 
-> [!IMPORTANT]
-> **Real-World Gold Market Integration:** BitGold fetches live, real-world **XAU/USD** gold price index feeds. Every transaction, simulation, automated round-up, and savings goal is directly pegged to real-time global spot gold exchange rates.
+**Real-World Gold Market Integration:** BitGold fetches live, real-world **XAU/USD** gold price index feeds. Every transaction, simulation, automated round-up, and savings goal is directly pegged to real-time global spot gold exchange rates.
 
 ---
 

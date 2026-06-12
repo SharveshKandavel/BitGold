@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { useMutation, useQuery } from 'convex/react';
+import { useMutation, useQuery, useConvexAuth } from 'convex/react';
 import { api } from '../convex/_generated/api';
-import { Toaster } from 'sonner';
+import { Toaster, toast } from 'sonner';
 import Navigation from './components/Navigation';
 import { Home } from './pages/Home';
 import Portfolio from './pages/Portfolio';
@@ -13,14 +13,54 @@ import RedeemPage from './pages/Redeem';
 import { PaymentMethodsPage } from './pages/PaymentMethodsPage';
 import { AnimatePresence } from 'framer-motion';
 import PageTransition from './components/PageTransition';
-import { useAuth } from "@clerk/clerk-react";
+import { useAuth, useUser } from "@clerk/clerk-react";
 import SignInPage from "./pages/SignIn";
 import DisclaimerPage from "./pages/Disclaimer";
 import { useGold } from './context/GoldContext';
 import { useCurrentUser } from './hooks/useCurrentUser';
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState('Home');
+  const getTabFromHash = () => {
+    const hash = typeof window !== 'undefined' ? window.location.hash.replace('#/', '') : '';
+    const map: Record<string, string> = {
+      home: 'Home',
+      portfolio: 'Portfolio',
+      trade: 'Trade',
+      activity: 'Activity',
+      profile: 'Profile',
+      vault: 'Vault',
+      redeem: 'Redeem',
+      'payment-methods': 'PaymentMethods'
+    };
+    return map[hash.toLowerCase()] || 'Home';
+  };
+
+  const [activeTab, setActiveTab] = useState(getTabFromHash);
+
+  useEffect(() => {
+    const handleHashChange = () => {
+      setActiveTab(getTabFromHash());
+    };
+    window.addEventListener('hashchange', handleHashChange);
+    return () => window.removeEventListener('hashchange', handleHashChange);
+  }, []);
+
+  useEffect(() => {
+    const map: Record<string, string> = {
+      Home: 'home',
+      Portfolio: 'portfolio',
+      Trade: 'trade',
+      Activity: 'activity',
+      Profile: 'profile',
+      Vault: 'vault',
+      Redeem: 'redeem',
+      PaymentMethods: 'payment-methods'
+    };
+    const hash = map[activeTab] || 'home';
+    if (window.location.hash !== `#/${hash}`) {
+      window.location.hash = `#/${hash}`;
+    }
+  }, [activeTab]);
   const [tradeInitialMode, setTradeInitialMode] = useState<'Buy' | 'Sell'>('Buy');
   const [vaultInitialSegment, setVaultInitialSegment] = useState<'storage' | 'automation'>('storage');
 
@@ -58,9 +98,29 @@ export default function App() {
   const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
   const authState = PUBLISHABLE_KEY ? useAuth() : { isLoaded: true, isSignedIn: true };
   const { isLoaded, isSignedIn } = authState;
+  const { user: clerkUser } = PUBLISHABLE_KEY ? useUser() : { user: null };
+  const { isAuthenticated: isConvexAuthenticated } = useConvexAuth();
 
   const ensureCurrentUser = useMutation(api.users.ensureCurrentUser);
   const user = useCurrentUser();
+
+  // Debug logging for sync validation
+  useEffect(() => {
+    console.log("[Auth Sync] isLoaded:", isLoaded, "isSignedIn:", isSignedIn, "isConvexAuthenticated:", isConvexAuthenticated, "user:", user);
+  }, [isLoaded, isSignedIn, isConvexAuthenticated, user]);
+
+  // Alert user if Clerk is signed in but Convex fails to authenticate (using fallback)
+  useEffect(() => {
+    if (PUBLISHABLE_KEY && isLoaded && isSignedIn && !isConvexAuthenticated) {
+      const timer = setTimeout(() => {
+        toast.info("Automatic Profile Sync Active", {
+          description: "Clerk is signed in, but Convex authentication is still establishing. We have activated your secure fallback profile so you can invest and use the app fully without interruption!",
+          duration: 8000,
+        });
+      }, 4000);
+      return () => clearTimeout(timer);
+    }
+  }, [PUBLISHABLE_KEY, isLoaded, isSignedIn, isConvexAuthenticated]);
 
   useEffect(() => {
     // If Clerk signs in, we should exit demo mode automatically
@@ -71,13 +131,24 @@ export default function App() {
   }, [isSignedIn, isDemoMode, setIsDemoMode]);
 
   useEffect(() => {
-    // If Clerk is not set up OR user has clicked Demo Mode, automatically log them in
-    // We only call ensureCurrentUser if we don't have a user record yet
-    const shouldEnsure = (isLoaded && isSignedIn && user === null) || (isDemoMode && user === null);
+    // We only call ensureCurrentUser if we don't have a user record yet, or if it is missing simulation balances.
+    // If Clerk is active, wait until the Convex client is authenticated (isConvexAuthenticated is true)
+    // or if Convex fails to authenticate, fall back to a clerk-based demo profile so the user can still play.
+    const isMissingBalances = user === null || (user !== undefined && (user.cadBalance === undefined || user.goldBalance === undefined));
+    const shouldEnsure = 
+      (isDemoMode && isMissingBalances) || 
+      (PUBLISHABLE_KEY ? ((isConvexAuthenticated || isSignedIn) && isMissingBalances) : (isLoaded && isSignedIn && isMissingBalances));
+
     if (shouldEnsure) {
-      ensureCurrentUser({ demoIdentifier: isDemoMode ? demoIdentifier : undefined });
+      const isFallback = !isConvexAuthenticated && isSignedIn && clerkUser;
+      ensureCurrentUser({ 
+        demoIdentifier: isFallback ? `clerk_${clerkUser.id}` : (isDemoMode ? demoIdentifier : undefined),
+        fallbackName: isFallback ? (clerkUser.fullName || undefined) : undefined,
+        fallbackEmail: isFallback ? (clerkUser.primaryEmailAddress?.emailAddress || undefined) : undefined,
+        fallbackPicture: isFallback ? (clerkUser.imageUrl || undefined) : undefined,
+      });
     }
-  }, [isLoaded, isSignedIn, user, ensureCurrentUser, isDemoMode, demoIdentifier]);
+  }, [isLoaded, isSignedIn, isConvexAuthenticated, user, ensureCurrentUser, isDemoMode, demoIdentifier, PUBLISHABLE_KEY, clerkUser]);
 
   const renderPage = () => {
     switch (activeTab) {

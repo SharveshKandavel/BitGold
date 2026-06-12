@@ -6,6 +6,8 @@ import Container from '../components/ui/Container';
 import Button from '../components/ui/Button';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
 import { PieChart, Package, Wallet, ArrowUp, ArrowDown, ChevronRight, TrendingUp } from 'lucide-react';
+import { useGold } from '../context/GoldContext';
+import { useAuth } from '@clerk/clerk-react';
 
 const GOLD_PRICE_PER_GRAM = 89.24;
 
@@ -17,6 +19,11 @@ import { useCurrentUser } from '../hooks/useCurrentUser';
 
 const Portfolio: React.FC<PortfolioProps> = ({ setActiveTab }) => {
   const user = useCurrentUser();
+  const { isDemoMode } = useGold();
+  const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
+  const clerkAuth = PUBLISHABLE_KEY ? useAuth() : { isSignedIn: true, isLoaded: true };
+  const isAuth = isDemoMode || (clerkAuth.isLoaded && clerkAuth.isSignedIn);
+
   const transactions = useQuery(
     api.transactions.getUserTransactions,
     user ? { userId: user._id } : 'skip',
@@ -46,17 +53,19 @@ const Portfolio: React.FC<PortfolioProps> = ({ setActiveTab }) => {
     },
   };
 
-  if (user === undefined) {
+  const isLoaded = !PUBLISHABLE_KEY || clerkAuth.isLoaded;
+
+  if (!isLoaded || user === undefined || (user !== null && transactions === undefined)) {
     return (
-      <Container className="pt-4 pb-24 bg-deepBlack h-full flex items-center justify-center">
+      <Container className="pt-4 pb-24 bg-deepBlack h-full flex items-center justify-center font-sans">
         <LoadingSpinner size={32} className="text-primary" />
       </Container>
     );
   }
 
-  if (user === null) {
+  if (user === null && !isAuth) {
     return (
-      <Container className="pt-4 pb-24 bg-deepBlack h-full flex items-center justify-center px-6">
+      <Container className="pt-4 pb-24 bg-deepBlack h-full flex items-center justify-center px-6 font-sans">
         <div className="text-center p-8 glass rounded-3xl border border-white/10 w-full max-w-sm">
           <p className="text-gray-400 text-sm mb-4">Please sign in to view your wealth portfolio.</p>
           <Button variant="primary" className="w-full" onClick={() => setActiveTab && setActiveTab('Profile')}>
@@ -67,13 +76,7 @@ const Portfolio: React.FC<PortfolioProps> = ({ setActiveTab }) => {
     );
   }
 
-  if (transactions === undefined) {
-    return (
-      <Container className="pt-4 pb-24 bg-deepBlack h-full flex items-center justify-center">
-        <LoadingSpinner size={32} className="text-primary" />
-      </Container>
-    );
-  }
+  const transactionsList = transactions ?? [];
 
   return (
     <Container className="pt-4 pb-24 bg-deepBlack h-full overflow-y-auto hide-scrollbar text-white font-sans">
@@ -159,8 +162,8 @@ const Portfolio: React.FC<PortfolioProps> = ({ setActiveTab }) => {
           </div>
 
           <div className="space-y-3">
-            {transactions.length === 0 ? (
-              <div className="p-8 glass rounded-3xl text-center border-dashed border-white/10">
+            {transactionsList.length === 0 ? (
+              <div className="p-8 glass rounded-3xl text-center border-dashed border-white/10 font-sans">
                 <p className="text-gray-500 text-xs font-medium">No transactions found.</p>
                 <Button 
                   variant="ghost" 
@@ -171,7 +174,7 @@ const Portfolio: React.FC<PortfolioProps> = ({ setActiveTab }) => {
                 </Button>
               </div>
             ) : (
-              transactions.slice(0, 4).map((tx) => (
+              transactionsList.slice(0, 4).map((tx) => (
                 <TransactionItem key={tx._id} tx={tx} />
               ))
             )}
@@ -207,26 +210,71 @@ const AssetCard = ({ icon: Icon, label, value, subValue, percent, color }: any) 
 
 const TransactionItem = ({ tx }: any) => {
   const isBuy = tx.type === 'buy';
-  const Icon = isBuy ? ArrowUp : ArrowDown;
-  const iconBg = isBuy ? 'bg-green-500/10' : 'bg-red-500/10';
-  const iconColor = isBuy ? 'text-green-400' : 'text-red-400';
+  const isSell = tx.type === 'sell';
+  const isDeposit = tx.type === 'deposit';
+  const isWithdraw = tx.type === 'withdraw';
+  const isRedeem = tx.type === 'redeem';
+
+  let Icon = ArrowUp;
+  let iconBg = 'bg-green-500/10';
+  let iconColor = 'text-green-400';
+  let title = "Transaction";
+  let cadDisplay = `$${tx.cadAmount.toFixed(2)}`;
+  let goldDisplay = `${tx.goldAmount.toFixed(4)}g`;
+
+  if (isBuy) {
+    Icon = ArrowUp;
+    iconBg = 'bg-green-500/10';
+    iconColor = 'text-green-400';
+    title = "Bought Gold";
+    cadDisplay = `$${tx.cadAmount.toFixed(2)}`;
+    goldDisplay = `+${tx.goldAmount.toFixed(4)}g`;
+  } else if (isSell) {
+    Icon = ArrowDown;
+    iconBg = 'bg-red-500/10';
+    iconColor = 'text-red-400';
+    title = "Sold Gold";
+    cadDisplay = `$${tx.cadAmount.toFixed(2)}`;
+    goldDisplay = `-${tx.goldAmount.toFixed(4)}g`;
+  } else if (isDeposit) {
+    Icon = ArrowUp;
+    iconBg = 'bg-emerald-500/10';
+    iconColor = 'text-emerald-400';
+    title = "Deposited Funds";
+    cadDisplay = `+$${tx.cadAmount.toFixed(2)}`;
+    goldDisplay = "";
+  } else if (isWithdraw) {
+    Icon = ArrowDown;
+    iconBg = 'bg-amber-500/10';
+    iconColor = 'text-amber-400';
+    title = "Withdrew Funds";
+    cadDisplay = `-$${tx.cadAmount.toFixed(2)}`;
+    goldDisplay = "";
+  } else if (isRedeem) {
+    Icon = ArrowDown;
+    iconBg = 'bg-red-500/10';
+    iconColor = 'text-red-400';
+    title = "Redeemed Gold";
+    cadDisplay = "Redemption";
+    goldDisplay = `-${tx.goldAmount.toFixed(4)}g`;
+  }
 
   return (
-    <div className="p-4 glass-dark rounded-2xl flex items-center justify-between group hover:border-white/20 transition-all">
+    <div className="p-4 glass-dark rounded-2xl flex items-center justify-between group hover:border-white/20 transition-all font-sans">
       <div className="flex items-center gap-3">
         <div className={`w-10 h-10 rounded-xl ${iconBg} flex items-center justify-center ${iconColor}`}>
           <Icon size={20} />
         </div>
         <div>
-          <p className="text-xs font-bold">{isBuy ? 'Bought Gold' : 'Sold Gold'}</p>
+          <p className="text-xs font-bold">{title}</p>
           <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">
             {new Date(tx.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
           </p>
         </div>
       </div>
       <div className="text-right">
-        <p className="text-xs font-bold">{isBuy ? '+' : '-'}{tx.goldAmount.toFixed(4)}g</p>
-        <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">${tx.cadAmount.toFixed(2)}</p>
+        {goldDisplay && <p className="text-xs font-bold">{goldDisplay}</p>}
+        <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">{cadDisplay}</p>
       </div>
     </div>
   );

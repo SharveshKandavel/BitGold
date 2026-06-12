@@ -5,10 +5,13 @@ import Container from "./Container";
 import { useLocation } from "../../context/LocationContext";
 import { ShieldCheck, User } from "lucide-react";
 import { useCurrentUser } from "../../hooks/useCurrentUser";
+import { useUser } from "@clerk/clerk-react";
 
 export function Navbar() {
   const { currentLocation } = useLocation();
   const user = useCurrentUser();
+  const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
+  const { user: clerkUser } = PUBLISHABLE_KEY ? useUser() : { user: null };
 
   // Get initials for avatar fallback
   const getInitials = (name?: string) => {
@@ -21,15 +24,21 @@ export function Navbar() {
       .slice(0, 2);
   };
 
-  const displayName = user?.name || 'Valued Member';
+  const dbName = user?.name && user.name !== "New User" ? user.name : user?.email;
+  const clerkName = clerkUser?.fullName || clerkUser?.primaryEmailAddress?.emailAddress;
+  const displayName = dbName || clerkName || 'Valued Member';
 
   return (
     <nav className="pt-8">
       <Container className="flex justify-between items-start">
         <div>
-          <p className="text-darkGray text-sm">Welcome back 👋</p>
-          <h1 className="text-white text-2xl font-bold">
-            {user?.name ? `${user.name.split(" ")[0]}'s Gold Vault` : "Your Gold Portfolio"}
+          <p className="text-darkGray text-sm font-sans">Welcome back 👋</p>
+          <h1 className="text-white text-2xl font-bold font-sans">
+            {user?.name && user.name !== "New User" 
+              ? `${user.name.split(" ")[0]}'s Gold Vault` 
+              : user?.email 
+                ? `${user.email.split("@")[0]}'s Gold Vault` 
+                : "Your Gold Portfolio"}
           </h1>
         </div>
         <div className="flex flex-col items-end gap-2">
