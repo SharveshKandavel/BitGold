@@ -12,32 +12,27 @@ export default {
         sans: ['Inter', ...defaultTheme.fontFamily.sans],
       },
       colors: {
-        // Core BitGold colors (from your CSS variables)
-        primary: '#D4AF37',       // Gold
-        secondary: '#0F172A',     // Navy
-        background: '#F8FAFC',    // Light background
+        // Core palette — keep it tight
+        primary: '#D4AF37',
+        deepBlack: '#0A0A0A',
+        
+        // Functional
         success: '#10B981',
         error: '#EF4444',
-        light: '#ffffff',
-        dark: '#171717',
-        deepBlack: '#0D0D0D', // Added for premium dark gold aesthetic
-        darkGray: '#9CA3AF', // Added for subheader text
         
-        // BitGold specific palette
-        bitgold: {
-          900: '#0A0F2B',       // Deep Navy
-          800: '#0F172A',       // Dark Navy  
-          700: '#1E293B',       // Medium Navy
-          gold: '#D4AF37',      // Primary Gold
-          lightGold: '#F5E7B2', // Light Gold
-        }
+        // Gold scale
+        gold: {
+          DEFAULT: '#D4AF37',
+          light: '#F5E7B2',
+          dark: '#B38728',
+          muted: '#D4AF37',
+        },
       },
       borderRadius: {
-        'container': '0.75rem',
+        'xl': '0.75rem',
+        '2xl': '1rem',
+        '3xl': '1.5rem',
       },
-      dropShadow: {
-        'gold': '0 0 10px rgba(212, 175, 55, 0.7)',
-      }
     },
   },
   plugins: [],

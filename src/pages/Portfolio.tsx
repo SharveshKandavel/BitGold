@@ -1,21 +1,20 @@
 import React from 'react';
 import { useQuery } from 'convex/react';
 import { api } from '../../convex/_generated/api';
-import { motion, Variants } from 'framer-motion';
-import Container from '../components/ui/Container';
+import { motion } from 'framer-motion';
 import Button from '../components/ui/Button';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
-import { PieChart, Package, Wallet, ArrowUp, ArrowDown, ChevronRight, TrendingUp } from 'lucide-react';
+import { PieChart, Package, Wallet, ArrowUp, ArrowDown, TrendingUp } from 'lucide-react';
 import { useGold } from '../context/GoldContext';
 import { useAuth } from '@clerk/clerk-react';
+import { useCurrentUser } from '../hooks/useCurrentUser';
+import { fadeIn, staggerContainer, staggerItem } from '../lib/animations';
 
 const GOLD_PRICE_PER_GRAM = 89.24;
 
 interface PortfolioProps {
   setActiveTab?: (tab: string) => void;
 }
-
-import { useCurrentUser } from '../hooks/useCurrentUser';
 
 const Portfolio: React.FC<PortfolioProps> = ({ setActiveTab }) => {
   const user = useCurrentUser();
@@ -35,61 +34,44 @@ const Portfolio: React.FC<PortfolioProps> = ({ setActiveTab }) => {
   const netWorth = cadBalance + goldValue;
   const goldAllocation = netWorth > 0 ? goldValue / netWorth : 0;
   const cashAllocation = netWorth > 0 ? cadBalance / netWorth : 0;
-  const totalReturn = 2.4; // Mock return
-
-  const fadeInUp: Variants = {
-    initial: { opacity: 0, y: 20 },
-    animate: { opacity: 1, y: 0, transition: { duration: 0.6, ease: 'easeOut' } },
-  };
-
-  const staggerContainer: Variants = {
-    initial: { opacity: 0 },
-    animate: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1,
-        delayChildren: 0.3,
-      },
-    },
-  };
 
   const isLoaded = !PUBLISHABLE_KEY || clerkAuth.isLoaded;
 
   if (!isLoaded || user === undefined || (user !== null && transactions === undefined)) {
     return (
-      <Container className="pt-4 pb-24 bg-deepBlack h-full flex items-center justify-center font-sans">
+      <div className="page-container justify-center items-center">
         <LoadingSpinner size={32} className="text-primary" />
-      </Container>
+      </div>
     );
   }
 
   if (user === null && !isAuth) {
     return (
-      <Container className="pt-4 pb-24 bg-deepBlack h-full flex items-center justify-center px-6 font-sans">
-        <div className="text-center p-8 glass rounded-3xl border border-white/10 w-full max-w-sm">
+      <div className="page-container justify-center px-6">
+        <div className="text-center p-8 card-primary w-full max-w-sm mx-auto">
           <p className="text-gray-400 text-sm mb-4">Please sign in to view your wealth portfolio.</p>
-          <Button variant="primary" className="w-full" onClick={() => setActiveTab && setActiveTab('Profile')}>
+          <Button variant="primary" fullWidth onClick={() => setActiveTab && setActiveTab('Profile')}>
             Go to Profile
           </Button>
         </div>
-      </Container>
+      </div>
     );
   }
 
   const transactionsList = transactions ?? [];
 
   return (
-    <Container className="pt-4 pb-24 bg-deepBlack h-full overflow-y-auto hide-scrollbar text-white font-sans">
+    <div className="page-container">
       <motion.div
         initial="initial"
         animate="animate"
-        variants={{ animate: { transition: { staggerChildren: 0.08 } } }}
+        variants={staggerContainer}
       >
         {/* Header */}
-        <motion.div variants={fadeInUp} className="flex justify-between items-center px-6 py-4">
-          <h1 className="text-xl font-bold tracking-tight">Wealth Portfolio</h1>
+        <motion.div variants={staggerItem} className="page-header px-1">
+          <h1 className="page-title">Wealth Portfolio</h1>
           <button 
-            className="w-10 h-10 rounded-full glass flex items-center justify-center text-gray-400 hover:text-white"
+            className="w-10 h-10 rounded-xl bg-white/[0.05] border border-white/[0.08] flex items-center justify-center text-gray-400 hover:text-white transition-colors hover:bg-white/[0.08]"
             onClick={() => setActiveTab && setActiveTab('Activity')}
           >
             <PieChart size={20} />
@@ -97,22 +79,19 @@ const Portfolio: React.FC<PortfolioProps> = ({ setActiveTab }) => {
         </motion.div>
 
         {/* Total Wealth Header */}
-        <motion.div variants={fadeInUp} className="text-center py-6">
-          <p className="text-[10px] text-gray-500 uppercase tracking-[0.3em] font-black mb-2">Net Worth</p>
-          <h2 className="text-5xl font-light tracking-tighter mb-2 text-gold-premium">
+        <motion.div variants={staggerItem} className="text-center py-6">
+          <p className="label-overline mb-2">Net Worth</p>
+          <h2 className="value-hero text-gold-gradient mb-2">
             ${netWorth.toLocaleString(undefined, { minimumFractionDigits: 2 })}
           </h2>
-          <div className="flex items-center justify-center gap-2 text-green-400 text-xs font-bold">
-            <TrendingUp size={14} />
+          <div className="flex items-center justify-center gap-2 text-emerald-400 text-sm font-medium">
+            <TrendingUp size={16} />
             <span>+${(netWorth * 0.024).toFixed(2)} (24h)</span>
           </div>
         </motion.div>
 
         {/* Circular Asset Breakdown */}
-        <motion.div variants={fadeInUp} className="relative w-64 h-64 mx-auto my-8 flex items-center justify-center">
-          {/* Outer Ring Glow */}
-          <div className="absolute inset-0 rounded-full border border-white/5 bg-primary/5 blur-2xl" />
-          
+        <motion.div variants={staggerItem} className="relative w-64 h-64 mx-auto my-8 flex items-center justify-center">
           <motion.div
             className="w-full h-full rounded-full relative"
             style={{
@@ -122,15 +101,15 @@ const Portfolio: React.FC<PortfolioProps> = ({ setActiveTab }) => {
             animate={{ rotate: 0, opacity: 1 }}
             transition={{ duration: 1.5, ease: 'circOut' }}
           >
-            <div className="absolute inset-[12%] bg-deepBlack rounded-full border border-white/5 flex flex-col items-center justify-center shadow-2xl">
-                <p className="text-[10px] text-gray-500 font-black uppercase tracking-widest">Allocation</p>
+            <div className="absolute inset-[12%] bg-deepBlack rounded-full border border-white/[0.08] flex flex-col items-center justify-center shadow-xl">
+                <p className="label-overline">Allocation</p>
                 <p className="text-lg font-bold">{(goldAllocation * 100).toFixed(0)}% Gold</p>
             </div>
           </motion.div>
         </motion.div>
 
         {/* Asset Cards */}
-        <div className="px-6 space-y-3 mb-10">
+        <motion.div variants={staggerItem} className="space-y-3 mb-10">
           <AssetCard 
             icon={Package} 
             label="Physical Gold" 
@@ -147,68 +126,70 @@ const Portfolio: React.FC<PortfolioProps> = ({ setActiveTab }) => {
             percent={cashAllocation}
             color="bg-blue-500"
           />
-        </div>
+        </motion.div>
 
         {/* Recent Activity Section */}
-        <motion.div variants={fadeInUp} className="px-6 pb-32">
-          <div className="flex justify-between items-end mb-6 ml-2">
-            <h2 className="text-sm font-black uppercase tracking-[0.2em] text-gray-500">Recent Activity</h2>
+        <motion.div variants={staggerItem} className="pb-8">
+          <div className="flex justify-between items-end mb-4 ml-1">
+            <h2 className="label-section">Recent Activity</h2>
             <button 
-              className="text-[10px] font-bold text-primary uppercase"
+              className="label-meta text-gold hover:text-white transition-colors"
               onClick={() => setActiveTab && setActiveTab('Activity')}
             >
               View All
             </button>
           </div>
 
-          <div className="space-y-3">
+          <div className="card-primary px-0 py-2">
             {transactionsList.length === 0 ? (
-              <div className="p-8 glass rounded-3xl text-center border-dashed border-white/10 font-sans">
-                <p className="text-gray-500 text-xs font-medium">No transactions found.</p>
+              <div className="p-6 text-center border-dashed border-white/[0.08]">
+                <p className="label-card">No transactions found.</p>
                 <Button 
                   variant="ghost" 
-                  className="mt-2 text-primary text-[10px]"
+                  className="mt-2 text-primary text-xs"
                   onClick={() => setActiveTab && setActiveTab('Trade')}
                 >
                   Start Investing
                 </Button>
               </div>
             ) : (
-              transactionsList.slice(0, 4).map((tx) => (
-                <TransactionItem key={tx._id} tx={tx} />
-              ))
+              <div className="flex flex-col">
+                {transactionsList.slice(0, 4).map((tx, idx, arr) => (
+                  <TransactionItem key={tx._id} tx={tx} isLast={idx === arr.length - 1} />
+                ))}
+              </div>
             )}
           </div>
         </motion.div>
       </motion.div>
-    </Container>
+    </div>
   );
 };
 
 const AssetCard = ({ icon: Icon, label, value, subValue, percent, color }: any) => (
-  <div className="p-5 rounded-3xl glass border border-white/5 flex items-center justify-between group hover:bg-white/10 transition-all">
+  <div className="card-secondary flex items-center justify-between group transition-colors hover:bg-white/[0.05]">
     <div className="flex items-center gap-4">
-      <div className={`w-12 h-12 rounded-2xl ${color}/10 flex items-center justify-center text-white`}>
+      <div className={`w-12 h-12 rounded-xl ${color}/10 flex items-center justify-center text-white`}>
         <Icon size={24} className={color.replace('bg-', 'text-')} />
       </div>
       <div>
-        <p className="text-sm font-bold">{label}</p>
-        <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">{subValue}</p>
+        <p className="text-sm font-semibold text-white">{label}</p>
+        <p className="label-meta">{subValue}</p>
       </div>
     </div>
     <div className="text-right">
-      <p className="text-sm font-bold">{value}</p>
+      <p className="text-sm font-semibold text-white">{value}</p>
       <div className="flex items-center justify-end gap-2 mt-1">
-        <div className="h-1 w-12 bg-white/5 rounded-full overflow-hidden">
+        <div className="h-1 w-12 bg-white/[0.05] rounded-full overflow-hidden">
           <div className={`h-full ${color} rounded-full`} style={{ width: `${percent * 100}%` }} />
         </div>
-        <span className="text-[10px] text-gray-500 font-bold">{(percent * 100).toFixed(0)}%</span>
+        <span className="label-meta">{(percent * 100).toFixed(0)}%</span>
       </div>
     </div>
   </div>
 );
 
-const TransactionItem = ({ tx }: any) => {
+const TransactionItem = ({ tx, isLast }: { tx: any, isLast: boolean }) => {
   const isBuy = tx.type === 'buy';
   const isSell = tx.type === 'sell';
   const isDeposit = tx.type === 'deposit';
@@ -216,16 +197,16 @@ const TransactionItem = ({ tx }: any) => {
   const isRedeem = tx.type === 'redeem';
 
   let Icon = ArrowUp;
-  let iconBg = 'bg-green-500/10';
-  let iconColor = 'text-green-400';
+  let iconBg = 'bg-emerald-500/10';
+  let iconColor = 'text-emerald-400';
   let title = "Transaction";
   let cadDisplay = `$${tx.cadAmount.toFixed(2)}`;
   let goldDisplay = `${tx.goldAmount.toFixed(4)}g`;
 
   if (isBuy) {
     Icon = ArrowUp;
-    iconBg = 'bg-green-500/10';
-    iconColor = 'text-green-400';
+    iconBg = 'bg-emerald-500/10';
+    iconColor = 'text-emerald-400';
     title = "Bought Gold";
     cadDisplay = `$${tx.cadAmount.toFixed(2)}`;
     goldDisplay = `+${tx.goldAmount.toFixed(4)}g`;
@@ -260,21 +241,21 @@ const TransactionItem = ({ tx }: any) => {
   }
 
   return (
-    <div className="p-4 glass-dark rounded-2xl flex items-center justify-between group hover:border-white/20 transition-all font-sans">
+    <div className={`card-flat flex items-center justify-between group transition-colors hover:bg-white/[0.02] px-4 ${isLast ? 'border-b-0' : ''}`}>
       <div className="flex items-center gap-3">
         <div className={`w-10 h-10 rounded-xl ${iconBg} flex items-center justify-center ${iconColor}`}>
-          <Icon size={20} />
+          <Icon size={18} />
         </div>
         <div>
-          <p className="text-xs font-bold">{title}</p>
-          <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">
+          <p className="text-sm font-medium text-white">{title}</p>
+          <p className="label-timestamp">
             {new Date(tx.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
           </p>
         </div>
       </div>
       <div className="text-right">
-        {goldDisplay && <p className="text-xs font-bold">{goldDisplay}</p>}
-        <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">{cadDisplay}</p>
+        {goldDisplay && <p className="text-sm font-medium text-white">{goldDisplay}</p>}
+        <p className="label-meta">{cadDisplay}</p>
       </div>
     </div>
   );

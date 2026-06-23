@@ -4,10 +4,10 @@ import { api } from '../../../convex/_generated/api';
 import { fetchLiveGoldPrice } from '../../lib/goldApi';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Sparkles } from 'lucide-react';
-import Card from '../ui/Card';
 import { toast } from 'sonner';
 import { useGold } from '../../context/GoldContext';
 import { useAuth } from '@clerk/clerk-react';
+import { useCurrentUser } from '../../hooks/useCurrentUser';
 
 interface Transaction {
   id: number;
@@ -17,8 +17,6 @@ interface Transaction {
 }
 
 const TROY_OZ_TO_GRAMS = 31.1034768;
-
-import { useCurrentUser } from '../../hooks/useCurrentUser';
 
 const RoundUpCard: React.FC = () => {
   const user = useCurrentUser();
@@ -36,14 +34,12 @@ const RoundUpCard: React.FC = () => {
   const [roundUpCount, setRoundUpCount] = useState(0);
   const [livePrice, setLivePrice] = useState(2664.24);
 
-  // Sync state with database
   useEffect(() => {
     if (settings !== undefined && settings !== null) {
       setIsEnabled(settings.enabled);
     }
   }, [settings]);
 
-  // Fetch gold price for calculations
   useEffect(() => {
     const getPrice = async () => {
       try {
@@ -65,7 +61,6 @@ const RoundUpCard: React.FC = () => {
     }
 
     const interval = setInterval(async () => {
-      // Limit to 6 transactions per day session
       if (roundUpCount >= 6) {
         toast.info("Daily simulated round-up limit reached (6 transactions).");
         setIsEnabled(false);
@@ -73,7 +68,7 @@ const RoundUpCard: React.FC = () => {
       }
 
       const description = ['Starbucks', 'Grocery Store', 'Coffee Shop', 'Pharmacy', 'Netflix', 'Uber'][Math.floor(Math.random() * 6)];
-      const amount = parseFloat((Math.random() * 10 + 1).toFixed(2)); // $1.00 - $11.00
+      const amount = parseFloat((Math.random() * 10 + 1).toFixed(2));
       let roundedUp = 0;
 
       const remainder = amount % 1;
@@ -82,11 +77,9 @@ const RoundUpCard: React.FC = () => {
       }
 
       if (roundedUp > 0) {
-        // Execute the buy mutation on the backend
         try {
           const goldAmount = roundedUp / pricePerGram;
           
-          // Verify user has balance before buying
           const currentCadBalance = user.cadBalance ?? 0;
           if (currentCadBalance >= roundedUp) {
             await executeBuy({
@@ -103,7 +96,7 @@ const RoundUpCard: React.FC = () => {
               roundedUp,
             };
 
-            setTransactions((prev) => [newTransaction, ...prev].slice(0, 3)); // Keep only last 3
+            setTransactions((prev) => [newTransaction, ...prev].slice(0, 3));
             setRoundUpCount((prev) => prev + 1);
             toast.success(`Invested spare change: +$${roundedUp.toFixed(2)} at ${description}!`);
           } else {
@@ -114,18 +107,18 @@ const RoundUpCard: React.FC = () => {
           console.error("Round-up execution failed:", error);
         }
       }
-    }, 45000); // Simulate a transaction every 45 seconds when active (approx 5-6 a day style)
+    }, 45000);
 
     return () => clearInterval(interval);
   }, [isEnabled, user, executeBuy, pricePerGram, roundUpCount]);
 
   return (
-    <Card className="bg-deepBlack/40 border border-white/10 backdrop-blur-md relative overflow-hidden">
+    <div className="card-primary relative overflow-hidden">
       <div className="flex justify-between items-center mb-4">
-        <h3 className="text-sm font-bold uppercase tracking-widest text-[#D4AF37]">Automatic Round-Ups</h3>
-        <motion.button
+        <h3 className="label-section text-gold">Automatic Round-Ups</h3>
+        <button
           className={`relative inline-flex h-8 w-14 items-center rounded-full transition-colors focus:outline-none ${
-            isEnabled ? 'bg-primary' : 'bg-gray-700'
+            isEnabled ? 'bg-primary' : 'bg-white/[0.1]'
           }`}
           onClick={async () => {
             if (!isAuth) {
@@ -149,10 +142,9 @@ const RoundUpCard: React.FC = () => {
             } catch (err) {
               console.error(err);
               toast.error("Failed to update settings.");
-              setIsEnabled(isEnabled); // Revert
+              setIsEnabled(isEnabled);
             }
           }}
-          whileTap={{ scale: 0.95 }}
         >
           <motion.span
             className={`inline-block h-6 w-6 transform rounded-full bg-white transition-transform ${
@@ -167,10 +159,10 @@ const RoundUpCard: React.FC = () => {
               transition={{ repeat: Infinity, duration: 1.5, ease: 'easeInOut' }}
             />
           )}
-        </motion.button>
+        </button>
       </div>
 
-      <p className="text-xs text-gray-400 mb-4 leading-relaxed">
+      <p className="label-card leading-relaxed mb-4">
         Automatically invest your spare change from everyday purchases (averaging 5-6 transactions per day). For demonstration, a simulated transaction runs every 45 seconds (max 6).
       </p>
 
@@ -184,49 +176,31 @@ const RoundUpCard: React.FC = () => {
             className="space-y-2 mt-4"
           >
             {transactions.length === 0 && (
-              <p className="text-center text-gray-500 text-xs py-4 font-bold tracking-widest uppercase">Waiting for transactions...</p>
+              <p className="text-center label-meta py-4">Waiting for transactions...</p>
             )}
             {transactions.map((tx) => (
               <motion.div
                 key={tx.id}
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20, transition: { duration: 0.2 } }}
-                className="flex justify-between items-center bg-white/[0.02] border border-white/5 p-3 rounded-xl text-xs"
+                exit={{ opacity: 0, y: -10, transition: { duration: 0.2 } }}
+                className="flex justify-between items-center card-secondary p-3"
               >
-                <span>{tx.description} (${tx.amount.toFixed(2)})</span>
-                <motion.span
-                  className="flex items-center text-primary font-bold"
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.2, type: 'spring', stiffness: 500, damping: 30 }}
-                >
-                  <motion.div
-                    className="mr-1"
-                    initial={{ y: -10, opacity: 0, rotate: -30 }}
-                    animate={{ y: 0, opacity: 1, rotate: 0 }}
-                    transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-                  >
-                    <Sparkles size={14} className="text-[#D4AF37]" />
-                  </motion.div>
+                <span className="text-xs font-medium text-gray-300">{tx.description} (${tx.amount.toFixed(2)})</span>
+                <span className="flex items-center text-gold text-xs font-semibold">
+                  <Sparkles size={14} className="text-gold mr-1" />
                   +${tx.roundedUp.toFixed(2)} invested
-                </motion.span>
+                </span>
               </motion.div>
             ))}
           </motion.div>
         )}
       </AnimatePresence>
 
-      <motion.div
-        className="absolute bottom-4 right-4 text-[9px] font-black uppercase tracking-widest text-gray-500"
-        key={roundUpCount}
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-      >
-        Simulated transactions today: <span className="text-primary">{roundUpCount}</span> (Daily limit: 6)
-      </motion.div>
-    </Card>
+      <div className="absolute bottom-4 right-4 label-meta">
+        Simulated transactions today: <span className="text-primary">{roundUpCount}</span> / 6
+      </div>
+    </div>
   );
 };
 

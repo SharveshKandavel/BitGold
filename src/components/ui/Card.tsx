@@ -1,21 +1,22 @@
 import React from 'react';
 import { cn } from '../../lib/utils';
-import { motion, HTMLMotionProps } from 'framer-motion'; // Import motion
 
-interface CardProps extends HTMLMotionProps<"div"> {
-  // Additional props can be added here if needed
+interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
+  variant?: 'primary' | 'secondary' | 'flat' | 'hero';
 }
 
-const Card: React.FC<CardProps> = ({ className, children, ...props }) => {
+const Card: React.FC<CardProps> = ({ className, variant = 'primary', children, ...props }) => {
+  const variantClass = {
+    primary: 'card-primary',
+    secondary: 'card-secondary',
+    flat: 'card-flat',
+    hero: 'card-hero',
+  }[variant];
+
   return (
-    <motion.div // Changed to motion.div
-      className={cn('card', className)} 
-      whileTap={{ scale: 0.98 }} // Added haptic effect
-      whileHover={{ translateY: -2 }} // Add whileHover effect
-      {...props}
-    >
+    <div className={cn(variantClass, className)} {...props}>
       {children}
-    </motion.div>
+    </div>
   );
 };
 

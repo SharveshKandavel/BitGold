@@ -1,14 +1,12 @@
 import React, { useState } from 'react';
-import { useMutation, useQuery } from 'convex/react';
+import { useMutation } from 'convex/react';
 import { api } from '../../convex/_generated/api';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Package, X } from 'lucide-react';
 import { toast } from 'sonner';
-import Container from '../components/ui/Container';
-import Card from '../components/ui/Card';
 import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
-import PageTransition from '../components/PageTransition';
+import { useCurrentUser } from '../hooks/useCurrentUser';
 
 interface Product {
   id: string;
@@ -16,7 +14,7 @@ interface Product {
   type: '1g_bar' | '5g_coin' | '10g_swiss_bar';
   weight: string;
   image: string;
-  priceEstimate: string; // Placeholder for dynamic pricing
+  priceEstimate: string;
 }
 
 const products: Product[] = [
@@ -49,8 +47,6 @@ const products: Product[] = [
 interface RedeemPageProps {
   setActiveTab?: (tab: string) => void;
 }
-
-import { useCurrentUser } from '../hooks/useCurrentUser';
 
 const RedeemPage: React.FC<RedeemPageProps> = ({ setActiveTab }) => {
   const user = useCurrentUser();
@@ -98,7 +94,7 @@ const RedeemPage: React.FC<RedeemPageProps> = ({ setActiveTab }) => {
     if (!selectedProduct) return;
 
     const hasEmptyFields = Object.entries(shippingAddress).some(([key, val]) => {
-      if (key === 'address2') return false; // Address line 2 is optional
+      if (key === 'address2') return false;
       return val.trim() === '';
     });
 
@@ -144,9 +140,9 @@ const RedeemPage: React.FC<RedeemPageProps> = ({ setActiveTab }) => {
   };
 
   return (
-    <Container className="py-8 bg-black h-full overflow-y-auto font-sans"> {/* Pure black background for the page */}
+    <div className="page-container">
       <motion.h1
-        className="text-4xl md:text-5xl font-light tracking-tight text-white mb-12 text-center"
+        className="page-title text-center text-3xl font-light mb-10 mt-4"
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
@@ -154,21 +150,19 @@ const RedeemPage: React.FC<RedeemPageProps> = ({ setActiveTab }) => {
         Redeem Physical Gold
       </motion.h1>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 pb-32">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pb-32">
         {products.map((product) => (
-          <Card
+          <div
             key={product.id}
-            className="bg-deepBlack/60 backdrop-blur-md p-6 flex flex-col items-center text-center cursor-pointer hover:border-primary transition-colors"
+            className="card-primary flex flex-col items-center text-center cursor-pointer hover:border-primary transition-colors hover:bg-white/[0.08]"
             onClick={() => handleProductClick(product)}
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
           >
             <img src={product.image} alt={product.name} className="w-48 h-48 object-contain mb-4 rounded-lg" />
-            <h3 className="text-xl font-light tracking-tight text-white mb-2">{product.name}</h3>
-            <p className="text-gray-400 text-sm mb-1">{product.weight}</p>
-            <p className="text-primary font-bold text-lg">{product.priceEstimate}</p>
-            <Button className="mt-4">Redeem</Button>
-          </Card>
+            <h3 className="text-lg font-medium text-white mb-1">{product.name}</h3>
+            <p className="label-meta mb-1">{product.weight}</p>
+            <p className="text-gold font-semibold text-lg">{product.priceEstimate}</p>
+            <Button variant="gold" className="mt-4 w-full text-xs py-2">Redeem</Button>
+          </div>
         ))}
       </div>
 
@@ -176,18 +170,18 @@ const RedeemPage: React.FC<RedeemPageProps> = ({ setActiveTab }) => {
       <AnimatePresence>
         {selectedProduct && (
           <motion.div
-            className="fixed inset-x-0 bottom-0 bg-deepBlack/80 backdrop-blur-xl border-t border-white/10 p-6 z-50 rounded-t-3xl shadow-2xl"
+            className="fixed inset-x-0 bottom-0 bg-deepBlack border-t border-white/[0.08] p-6 z-50 rounded-t-3xl shadow-[0_-10px_40px_rgba(0,0,0,0.5)]"
             initial={{ y: '100%' }}
             animate={{ y: 0 }}
             exit={{ y: '100%' }}
-            transition={{ type: 'spring', damping: 20, stiffness: 100 }}
+            transition={{ type: 'spring', damping: 25, stiffness: 200 }}
           >
             <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-light tracking-tight text-white">
-                Shipping Details for {selectedProduct.name}
+              <h2 className="text-lg font-medium text-white">
+                Shipping Details
               </h2>
-              <Button variant="ghost" onClick={handleCloseDrawer} className="text-white">
-                <X size={24} />
+              <Button variant="ghost" onClick={handleCloseDrawer} className="text-white p-2">
+                <X size={20} />
               </Button>
             </div>
 
@@ -201,13 +195,13 @@ const RedeemPage: React.FC<RedeemPageProps> = ({ setActiveTab }) => {
               <Input id="country" label="Country" name="country" value={shippingAddress.country} onChange={handleInputChange} />
             </div>
 
-            <Button className="w-full" onClick={handleRedeem} icon={<Package />} disabled={isSubmitting}>
+            <Button variant="gold" fullWidth onClick={handleRedeem} icon={<Package />} disabled={isSubmitting}>
               {isSubmitting ? 'Submitting...' : 'Confirm Redemption'}
             </Button>
           </motion.div>
         )}
       </AnimatePresence>
-    </Container>
+    </div>
   );
 };
 

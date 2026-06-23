@@ -2,205 +2,138 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Base styles for the app */
+/* ─── Base ─── */
 body {
-  @apply bg-gradient-to-br from-deepBlack to-black text-bitgold-lightGold font-sans;
+  @apply bg-deepBlack text-white font-sans antialiased;
 }
 
-/* Custom scrollbar */
-::-webkit-scrollbar {
-  width: 6px;
+/* Hide scrollbar globally for mobile feel */
+::-webkit-scrollbar { display: none; }
+html { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* ─── Typography Hierarchy ─── */
+/* Use these instead of inline text-[10px] everywhere */
+.label-section {
+  @apply text-[13px] font-semibold text-gray-300 tracking-wide;
+}
+.label-card {
+  @apply text-xs font-medium text-gray-400;
+}
+.label-meta {
+  @apply text-[11px] font-normal text-gray-500;
+}
+.label-overline {
+  @apply text-[10px] font-semibold uppercase tracking-widest text-gray-500;
+}
+.label-timestamp {
+  @apply text-xs font-light text-gray-600 tabular-nums;
 }
 
-::-webkit-scrollbar-track {
-  background: #f1f1f1;
+/* Value displays */
+.value-hero {
+  @apply text-4xl font-semibold text-white tracking-tight;
+}
+.value-lg {
+  @apply text-2xl font-semibold text-white;
+}
+.value-md {
+  @apply text-lg font-medium text-white;
 }
 
-::-webkit-scrollbar-thumb {
-  background: theme('colors.primary');
-  border-radius: 3px;
+/* ─── Card System (3 tiers) ─── */
+.card-primary {
+  @apply bg-white/[0.05] border border-white/[0.08] rounded-2xl p-5;
+}
+.card-secondary {
+  @apply bg-white/[0.03] border border-white/[0.05] rounded-xl p-4;
+}
+.card-flat {
+  @apply bg-transparent border-b border-white/[0.04] py-3;
 }
 
-::-webkit-scrollbar-thumb:hover {
-  background: #b8941f;
+/* Hero card — used ONCE per page max */
+.card-hero {
+  @apply bg-gradient-to-br from-[#BF953F]/20 via-[#D4AF37]/10 to-transparent
+         border border-[#D4AF37]/20 rounded-3xl p-6;
 }
 
-/* Smooth transitions */
-* {
-  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;
-  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-  transition-duration: 150ms;
+/* ─── Gold Text (static, no animation) ─── */
+.text-gold {
+  @apply text-[#D4AF37];
 }
-
-/* Universal button press effect */
-.btn-press-effect {
-  @apply transition-all duration-150 ease-in-out active:scale-[0.98];
-}
-
-/* Gold gradient utilities for text and backgrounds */
 .text-gold-gradient {
-  @apply bg-gradient-to-r from-bitgold-gold to-bitgold-lightGold bg-clip-text text-transparent;
-}
-
-.bg-gold-gradient {
-  @apply bg-gradient-to-r from-bitgold-gold to-bitgold-lightGold;
-}
-
-/* Custom utility for general containers */
-.container-custom {
-  @apply mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl;
-}
-
-/* Base styling for interactive elements */
-.interactive-element {
-  @apply transition-all duration-200 ease-in-out cursor-pointer;
-}
-
-/* Card base styling */
-.card {
-  @apply bg-white/5 backdrop-blur-lg border border-white/10 rounded-2xl p-6 shadow-lg;
-}
-
-/* Button base styling */
-.btn {
-  @apply inline-flex items-center justify-center px-5 py-2 border border-transparent text-base font-medium rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2;
-}
-
-/* Primary button styling */
-.btn-primary {
-  @apply btn text-bitgold-900 bg-bitgold-gold hover:bg-bitgold-lightGold focus:ring-bitgold-gold;
-}
-
-/* Secondary button styling */
-.btn-secondary {
-  @apply btn text-bitgold-gold bg-transparent border-bitgold-gold hover:bg-bitgold-700 focus:ring-bitgold-gold;
-}
-
-/* Input field base styling */
-.input-field {
-  @apply block w-full px-4 py-2 text-base text-bitgold-lightGold bg-bitgold-800 border border-bitgold-700 rounded-md shadow-sm 
-         transition-all duration-200 ease-in-out
-         hover:border-bitgold-gold/50
-         focus:outline-none focus:ring-2 focus:ring-bitgold-gold/50 focus:border-bitgold-gold;
-}
-
-/* Typography - large title */
-.text-title-lg {
-  @apply text-3xl font-extrabold text-bitgold-lightGold sm:text-4xl;
-}
-
-/* Typography - medium title */
-.text-title-md {
-  @apply text-2xl font-bold text-bitgold-lightGold;
-}
-
-/* Typography - small title */
-.text-title-sm {
-  @apply text-xl font-semibold text-bitgold-lightGold;
-}
-
-/* Text - subtle */
-.text-subtle {
-  @apply text-bitgold-lightGold opacity-75;
-}
-
-/* Pulse animation for live data points */
-@keyframes pulse {
-  0% {
-    transform: scale(0.8);
-    opacity: 0.7;
-  }
-  50% {
-    transform: scale(1.2);
-    opacity: 0.3;
-  }
-  100% {
-    transform: scale(0.8);
-    opacity: 0.7;
-  }
-}
-
-.animate-pulse-dot {
-  animation: pulse 1.5s infinite ease-in-out;
-}
-
-/* Shimmer animation for CTA button */
-@keyframes shimmer {
-  0% {
-    background-position: -500px 0;
-  }
-  100% {
-    background-position: 500px 0;
-  }
-}
-
-/* Premium UI Utilities */
-.glass {
-  @apply bg-white/5 backdrop-blur-xl border border-white/10;
-}
-
-.glass-dark {
-  @apply bg-black/40 backdrop-blur-2xl border border-white/5;
-}
-
-.text-gold-premium {
-  background: linear-gradient(72deg, #D4AF37 0%, #F7E98D 25%, #D4AF37 50%, #B8860B 75%, #D4AF37 100%);
+  background: linear-gradient(135deg, #D4AF37 0%, #F5E7B2 50%, #D4AF37 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
-  background-size: 200% auto;
-  animation: gold-shimmer 4s linear infinite;
 }
 
-@keyframes gold-shimmer {
-  to {
-    background-position: 200% center;
-  }
+/* ─── Interactive Elements Only ─── */
+.btn-gold {
+  @apply bg-gradient-to-r from-[#BF953F] via-[#F5E7B2] to-[#B38728]
+         text-black font-bold text-xs uppercase tracking-wider
+         py-3 px-6 rounded-xl
+         transition-transform duration-150
+         hover:scale-[1.01] active:scale-[0.98];
+}
+.btn-secondary {
+  @apply bg-white/[0.05] border border-white/[0.08] text-white
+         font-medium text-sm py-3 px-6 rounded-xl
+         transition-colors duration-150
+         hover:bg-white/[0.08];
+}
+.btn-ghost {
+  @apply bg-transparent text-gray-400 font-medium text-sm
+         py-2 px-4 rounded-lg
+         transition-colors duration-150
+         hover:text-white hover:bg-white/[0.04];
 }
 
-.bg-gold-card-premium {
-  background: linear-gradient(135deg, #BF953F 0%, #FCF6BA 25%, #B38728 50%, #F5E7B2 75%, #AA771C 100%);
-  background-size: 200% 200%;
-  animation: gold-shimmer-bg 8s ease infinite alternate;
+/* ─── Pill / Tag ─── */
+.pill {
+  @apply text-[11px] font-medium px-3 py-1 rounded-full;
+}
+.pill-active {
+  @apply bg-[#D4AF37] text-black;
+}
+.pill-inactive {
+  @apply bg-white/[0.05] text-gray-400;
+}
+.pill-success {
+  @apply bg-emerald-500/10 text-emerald-400;
+}
+.pill-error {
+  @apply bg-red-500/10 text-red-400;
 }
 
-@keyframes gold-shimmer-bg {
-  0% {
-    background-position: 0% 50%;
-  }
-  100% {
-    background-position: 100% 50%;
-  }
+/* ─── Glass (use sparingly — nav + modals only) ─── */
+.glass {
+  @apply bg-black/60 backdrop-blur-xl border border-white/[0.06];
 }
 
-.gold-border {
-  position: relative;
-  background: rgba(255, 255, 255, 0.03);
-  backdrop-filter: blur(20px);
+/* ─── Subtle glow for ONE hero element per page ─── */
+.glow-gold {
+  box-shadow: 0 8px 40px -12px rgba(212, 175, 55, 0.15);
 }
 
-.gold-border::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  padding: 1.5px;
-  background: linear-gradient(72deg, #D4AF37, #F7E98D, #B8860B);
-  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  -webkit-mask-composite: xor;
-  mask-composite: exclude;
-  pointer-events: none;
+/* ─── Live dot pulse ─── */
+@keyframes pulse-dot {
+  0%, 100% { transform: scale(0.9); opacity: 0.6; }
+  50% { transform: scale(1.2); opacity: 0.3; }
+}
+.animate-pulse-dot {
+  animation: pulse-dot 1.5s infinite ease-in-out;
 }
 
-.shadow-gold-soft {
-  box-shadow: 0 10px 30px -10px rgba(212, 175, 55, 0.2);
+/* ─── Page Layout Standard ─── */
+.page-container {
+  @apply flex flex-col min-h-full h-full w-full max-w-5xl mx-auto px-5 md:px-8 pt-4 pb-28 md:pb-8 overflow-y-auto;
 }
-
-.hide-scrollbar::-webkit-scrollbar {
-  display: none;
+.page-header {
+  @apply flex items-center justify-between mb-6;
 }
-.hide-scrollbar {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
+.page-title {
+  @apply text-xl font-semibold text-white;
 }
-
-
+.section-gap {
+  @apply space-y-4;
+}

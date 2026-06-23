@@ -20,9 +20,7 @@ interface GoldContextType {
 const GoldContext = createContext<GoldContextType | undefined>(undefined);
 
 export const GoldProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [isDemoMode, setIsDemoMode] = useState(() => {
-    return localStorage.getItem('bitgold_demo_mode') === 'true';
-  });
+  const [isDemoMode, setIsDemoMode] = useState(false);
 
   const [demoIdentifier, setDemoIdentifier] = useState<string | undefined>(() => {
     return localStorage.getItem('bitgold_demo_identifier') || undefined;

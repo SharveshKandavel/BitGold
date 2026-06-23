@@ -1,19 +1,18 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation } from 'convex/react';
 import { api } from '../../convex/_generated/api';
-import { motion, Variants, AnimatePresence } from 'framer-motion';
-import Container from '../components/ui/Container';
+import { motion, AnimatePresence } from 'framer-motion';
 import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
 import { LogOut, Landmark, Fingerprint, Bell, HelpCircle, ShieldCheck, User, CreditCard, ChevronRight, Settings, ExternalLink, X, Trash2, ArrowLeftRight, Plus, RefreshCw } from 'lucide-react';
 import { useClerk, useUser } from '@clerk/clerk-react';
 import { toast } from 'sonner';
+import { useCurrentUser } from '../hooks/useCurrentUser';
+import { staggerContainer, staggerItem } from '../lib/animations';
 
 interface ProfileProps {
   setActiveTab: (tab: string) => void;
 }
-
-import { useCurrentUser } from '../hooks/useCurrentUser';
 
 const Profile: React.FC<ProfileProps> = ({ setActiveTab }) => {
   const user = useCurrentUser();
@@ -32,7 +31,6 @@ const Profile: React.FC<ProfileProps> = ({ setActiveTab }) => {
   const [showTransferModal, setShowTransferModal] = useState(false);
   const [selectedAccountForTransfer, setSelectedAccountForTransfer] = useState<any>(null);
 
-  // Link bank account form fields
   const [bankName, setBankName] = useState("");
   const [accountName, setAccountName] = useState("");
   const [routingNumber, setRoutingNumber] = useState("");
@@ -40,14 +38,13 @@ const Profile: React.FC<ProfileProps> = ({ setActiveTab }) => {
   const [accountType, setAccountType] = useState<"checking" | "savings">("checking");
   const [isLinking, setIsLinking] = useState(false);
 
-  // Transfer form fields
   const [transferAmount, setTransferAmount] = useState("");
   const [transferDirection, setTransferDirection] = useState<"deposit" | "withdraw">("deposit");
   const [isTransferring, setIsTransferring] = useState(false);
 
   const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
   const clerk = PUBLISHABLE_KEY ? useClerk() : null;
-  const { user: clerkUser, isLoaded } = PUBLISHABLE_KEY ? useUser() : { user: null, isLoaded: true };
+  const { user: clerkUser } = PUBLISHABLE_KEY ? useUser() : { user: null };
   const dbName = user?.name && user.name !== "New User" ? user.name : user?.email;
   const clerkName = clerkUser?.fullName || clerkUser?.primaryEmailAddress?.emailAddress;
   const displayName = dbName || clerkName || 'Valued Member';
@@ -81,68 +78,50 @@ const Profile: React.FC<ProfileProps> = ({ setActiveTab }) => {
     }
   };
 
-  const fadeInUp: Variants = {
-    initial: { opacity: 0, y: 10 },
-    animate: { opacity: 1, y: 0, transition: { duration: 0.4 } },
-  };
-
-  const ToggleSwitch: React.FC<{ enabled: boolean; setEnabled: (v: boolean) => void }> = ({ enabled, setEnabled }) => (
-    <button
-      onClick={() => setEnabled(!enabled)}
-      className={`w-12 h-6 rounded-full p-1 transition-colors duration-200 ${enabled ? 'bg-primary' : 'bg-white/10'}`}
-    >
-      <motion.div
-        className="w-4 h-4 bg-white rounded-full"
-        animate={{ x: enabled ? 24 : 0 }}
-        transition={{ type: "spring", stiffness: 500, damping: 30 }}
-      />
-    </button>
-  );
-
   return (
-    <Container className="pt-4 pb-24 bg-deepBlack h-full overflow-y-auto hide-scrollbar text-white font-sans">
+    <div className="page-container">
       <motion.div
         initial="initial"
         animate="animate"
-        variants={{ animate: { transition: { staggerChildren: 0.05 } } }}
+        variants={staggerContainer}
       >
         {/* Header */}
-        <motion.div variants={fadeInUp} className="flex justify-between items-center px-6 py-4">
-          <h1 className="text-xl font-bold tracking-tight">Account</h1>
-          <button className="w-10 h-10 rounded-full glass flex items-center justify-center text-gray-400 hover:text-white" onClick={() => {}}>
+        <motion.div variants={staggerItem} className="page-header px-1">
+          <h1 className="page-title">Account</h1>
+          <button className="w-10 h-10 rounded-xl bg-white/[0.05] border border-white/[0.08] flex items-center justify-center text-gray-400 hover:text-white transition-colors" onClick={() => {}}>
             <Settings size={20} />
           </button>
         </motion.div>
 
         {/* User Identity Card */}
-        <motion.div variants={fadeInUp} className="px-6 mb-8">
-          <div className="relative p-8 rounded-[2.5rem] bg-gradient-to-br from-white/10 to-transparent border border-white/5 overflow-hidden">
+        <motion.div variants={staggerItem} className="mb-6">
+          <div className="card-hero relative p-8 flex flex-col items-center overflow-hidden">
             <div className="absolute top-0 right-0 p-4">
-              <ShieldCheck className="text-primary/40" size={40} />
+              <ShieldCheck className="text-primary/20" size={40} />
             </div>
             
-            <div className="flex flex-col items-center">
+            <div className="flex flex-col items-center relative z-10">
               <div className="relative mb-4">
-                <div className="w-24 h-24 rounded-full border-2 border-primary/30 p-1.5">
+                <div className="w-24 h-24 rounded-full border-2 border-primary/30 p-1">
                   {user?.picture ? (
-                    <img src={user.picture} alt="User" className="w-full h-full rounded-full object-cover shadow-2xl shadow-primary/20" />
+                    <img src={user.picture} alt="User" className="w-full h-full rounded-full object-cover" />
                   ) : (
-                    <div className="w-full h-full rounded-full bg-white/5 flex items-center justify-center text-primary">
+                    <div className="w-full h-full rounded-full bg-white/[0.05] flex items-center justify-center text-primary">
                       <User size={40} />
                     </div>
                   )}
                 </div>
-                <div className="absolute bottom-1 right-1 w-6 h-6 rounded-full bg-green-500 border-4 border-[#1a1a1a]" />
+                <div className="absolute bottom-1 right-1 w-5 h-5 rounded-full bg-emerald-500 border-2 border-black" />
               </div>
               
-              <h2 className="text-2xl font-bold">{displayName}</h2>
-              <p className="text-gray-500 text-xs font-bold uppercase tracking-[0.2em] mt-1">Premium Member</p>
+              <h2 className="text-2xl font-semibold text-white">{displayName}</h2>
+              <p className="label-meta mt-1 text-gold">Premium Member</p>
               
               <div className="flex gap-2 mt-4">
-                 <span className="px-3 py-1 rounded-full glass text-[10px] font-bold text-primary uppercase tracking-widest border border-primary/20">
+                 <span className="px-3 py-1 rounded-full bg-primary/10 text-xs font-semibold text-primary border border-primary/20">
                    Verified ID
                  </span>
-                 <span className="px-3 py-1 rounded-full glass text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                 <span className="px-3 py-1 rounded-full bg-white/[0.05] text-xs font-medium text-gray-400 border border-white/[0.05]">
                    Join 2024
                  </span>
               </div>
@@ -151,20 +130,19 @@ const Profile: React.FC<ProfileProps> = ({ setActiveTab }) => {
         </motion.div>
 
         {/* BitGold Premium Card */}
-        <motion.div variants={fadeInUp} className="px-6 mb-8">
-          <div className="p-6 rounded-3xl bg-gradient-to-br from-[#D4AF37] via-[#F7E98D] to-[#B8860B] relative overflow-hidden shadow-xl shadow-gold/20">
-            <div className="absolute -top-10 -right-10 w-40 h-40 bg-white/20 blur-[60px] rounded-full" />
+        <motion.div variants={staggerItem} className="mb-8">
+          <div className="p-6 rounded-3xl bg-gradient-to-r from-[#D4AF37] to-[#B38728] relative overflow-hidden shadow-xl shadow-gold/10">
             <div className="relative z-10">
                <div className="flex justify-between items-start mb-10">
-                 <p className="text-black font-black italic tracking-tighter text-xl">BITGOLD</p>
+                 <p className="text-black font-bold italic tracking-tighter text-xl">BITGOLD</p>
                  <CreditCard size={28} className="text-black/80" />
                </div>
                <div className="space-y-4">
                  <p className="text-black font-mono text-lg tracking-[0.2em]">**** **** **** 8821</p>
                  <div className="flex justify-between items-end">
-                    <p className="text-black/60 text-[10px] font-bold uppercase tracking-widest">Vault Member since 2024</p>
+                    <p className="text-black/60 text-xs font-semibold uppercase">Vault Member since 2024</p>
                     <div className="flex flex-col items-end">
-                      <p className="text-black/40 text-[8px] font-black uppercase tracking-widest mb-1">Expires</p>
+                      <p className="text-black/40 text-[9px] font-bold uppercase tracking-widest mb-1">Expires</p>
                       <p className="text-black font-bold text-sm">12/28</p>
                     </div>
                  </div>
@@ -174,11 +152,11 @@ const Profile: React.FC<ProfileProps> = ({ setActiveTab }) => {
         </motion.div>
 
         {/* Menu Sections */}
-        <div className="px-6 space-y-8 pb-12">
+        <div className="space-y-8 pb-12">
            {/* Section 1: Finances */}
-           <div>
-             <h3 className="text-[10px] text-gray-500 uppercase tracking-[0.3em] font-black mb-4 ml-2">Wealth Management</h3>
-              <div className="space-y-2">
+           <motion.div variants={staggerItem}>
+             <h3 className="label-section ml-2 mb-2">Wealth Management</h3>
+              <div className="card-primary px-0 py-2">
                  <MenuButton 
                    icon={Landmark} 
                    label="Linked Bank Accounts" 
@@ -191,52 +169,52 @@ const Profile: React.FC<ProfileProps> = ({ setActiveTab }) => {
                    value="Visa, Apple Pay" 
                    onClick={() => setActiveTab && setActiveTab('PaymentMethods')}
                  />
-                 <MenuButton icon={ExternalLink} label="Investment Statements" />
+                 <MenuButton icon={ExternalLink} label="Investment Statements" isLast />
               </div>
-           </div>
+           </motion.div>
 
            {/* Section 2: Security */}
-           <div>
-             <h3 className="text-[10px] text-gray-500 uppercase tracking-[0.3em] font-black mb-4 ml-2">Security & Privacy</h3>
-             <div className="space-y-2">
+           <motion.div variants={staggerItem}>
+             <h3 className="label-section ml-2 mb-2">Security & Privacy</h3>
+             <div className="card-primary px-0 py-2">
                 <ToggleMenuButton icon={Fingerprint} label="Biometric Sign-in" enabled={faceIdEnabled} setEnabled={setFaceIdEnabled} />
                 <ToggleMenuButton icon={Bell} label="Price Fluctuations" enabled={priceAlertsEnabled} setEnabled={setPriceAlertsEnabled} />
-                <MenuButton icon={ShieldCheck} label="Two-Factor Authentication" value="Enabled" />
+                <MenuButton icon={ShieldCheck} label="Two-Factor Authentication" value="Enabled" isLast />
              </div>
-           </div>
+           </motion.div>
 
            {/* Section 3: App */}
-           <div>
-             <h3 className="text-[10px] text-gray-500 uppercase tracking-[0.3em] font-black mb-4 ml-2">System</h3>
-             <div className="space-y-2">
+           <motion.div variants={staggerItem}>
+             <h3 className="label-section ml-2 mb-2">System</h3>
+             <div className="card-primary px-0 py-2">
                 <MenuButton icon={HelpCircle} label="Concierge Support" value="Live Chat" isGold />
                 <button 
                   onClick={handleResetPortfolio}
                   disabled={isResetting}
-                  className="w-full p-5 rounded-2xl glass-dark border border-amber-500/10 flex items-center justify-between group hover:border-amber-500/30 transition-all"
+                  className="card-flat w-full flex items-center justify-between group hover:bg-white/[0.02] px-4 py-4"
                 >
                   <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center text-amber-400 group-hover:bg-amber-500 transition-all group-hover:text-black">
+                    <div className="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center text-amber-400">
                       <RefreshCw size={20} className={isResetting ? "animate-spin" : ""} />
                     </div>
-                    <span className="text-sm font-bold text-amber-400">
+                    <span className="text-sm font-semibold text-amber-400">
                       {isResetting ? "Resetting Portfolio..." : "Reset Simulation Portfolio"}
                     </span>
                   </div>
                 </button>
                 <button 
                   onClick={handleSignOut}
-                  className="w-full p-5 rounded-2xl glass-dark border border-red-500/10 flex items-center justify-between group"
+                  className="card-flat w-full flex items-center justify-between group hover:bg-white/[0.02] px-4 py-4 border-b-0"
                 >
                   <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 rounded-xl bg-red-500/10 flex items-center justify-center text-red-400 group-hover:bg-red-500 transition-all group-hover:text-white">
+                    <div className="w-10 h-10 rounded-xl bg-red-500/10 flex items-center justify-center text-red-400">
                       <LogOut size={20} />
                     </div>
-                    <span className="text-sm font-bold text-red-400">Sign Out</span>
+                    <span className="text-sm font-semibold text-red-400">Sign Out</span>
                   </div>
                 </button>
              </div>
-           </div>
+           </motion.div>
          </div>
 
       </motion.div>
@@ -249,16 +227,16 @@ const Profile: React.FC<ProfileProps> = ({ setActiveTab }) => {
             animate={{ y: 0 }}
             exit={{ y: "100%" }}
             transition={{ type: "spring", damping: 25, stiffness: 200 }}
-            className="fixed bottom-0 left-0 right-0 bg-[#121212] border-t border-white/10 rounded-t-[2.5rem] p-6 z-40 max-w-md mx-auto shadow-2xl overflow-y-auto max-h-[85vh] hide-scrollbar"
+            className="fixed bottom-0 left-0 right-0 bg-deepBlack border-t border-white/[0.08] rounded-t-3xl p-6 z-40 max-w-md mx-auto shadow-[0_-10px_40px_rgba(0,0,0,0.5)] overflow-y-auto max-h-[85vh] hide-scrollbar"
           >
             <div className="flex justify-between items-center mb-6">
               <div>
-                <h3 className="text-lg font-bold text-white font-sans">Bank Accounts</h3>
-                <p className="text-gray-500 text-xs mt-1 font-sans">Manage your linked funding sources</p>
+                <h3 className="text-lg font-medium text-white">Bank Accounts</h3>
+                <p className="label-meta mt-1">Manage your linked funding sources</p>
               </div>
               <button 
                 onClick={() => setShowBankManager(false)}
-                className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-gray-400 hover:text-white"
+                className="w-8 h-8 rounded-full bg-white/[0.05] flex items-center justify-center text-gray-400 hover:text-white"
               >
                 <X size={18} />
               </button>
@@ -267,17 +245,15 @@ const Profile: React.FC<ProfileProps> = ({ setActiveTab }) => {
             <div className="space-y-4 mb-6">
               {bankAccounts && bankAccounts.length > 0 ? (
                 bankAccounts.map((account: any) => (
-                  <div key={account._id} className="relative p-5 rounded-3xl bg-gradient-to-br from-white/10 to-transparent border border-white/5 overflow-hidden shadow-lg">
-                    {/* Golden design overlay */}
+                  <div key={account._id} className="card-secondary relative overflow-hidden">
                     <div className="absolute top-0 right-0 p-4 opacity-25">
                       <Landmark className="text-primary" size={60} />
                     </div>
 
                     <div className="relative z-10 flex flex-col justify-between h-36">
                       <div>
-                        {/* Account Name on top */}
-                        <h4 className="text-sm font-bold text-white tracking-wide uppercase truncate pr-16 font-sans">{account.account_name || 'Unnamed Account'}</h4>
-                        <p className="text-[10px] text-gray-400 font-medium tracking-widest mt-0.5 font-sans">{displayName}</p>
+                        <h4 className="text-sm font-semibold text-white tracking-wide uppercase truncate pr-16">{account.account_name || 'Unnamed Account'}</h4>
+                        <p className="label-meta mt-0.5">{displayName}</p>
                       </div>
 
                       <div>
@@ -285,19 +261,19 @@ const Profile: React.FC<ProfileProps> = ({ setActiveTab }) => {
                           {account.bank_name} &bull;&bull;&bull;&bull; {account.last4}
                         </p>
                         <div className="flex items-center gap-2 mt-1">
-                          <span className="px-2 py-0.5 rounded bg-white/10 text-[9px] font-bold text-gray-400 uppercase tracking-widest font-sans">
+                          <span className="px-2 py-0.5 rounded bg-white/10 text-[10px] font-semibold text-gray-300 uppercase">
                             {account.type}
                           </span>
-                          <span className="text-[9px] font-mono text-gray-500">
+                          <span className="text-[10px] font-mono text-gray-400">
                             RTN: •••••{account.routing_number ? account.routing_number.slice(-4) : '****'}
                           </span>
                         </div>
                       </div>
 
-                      <div className="flex justify-between items-end border-t border-white/5 pt-2 mt-2">
+                      <div className="flex justify-between items-end border-t border-white/[0.05] pt-2 mt-2">
                         <div>
-                          <p className="text-[8px] text-gray-500 uppercase tracking-widest font-bold font-sans">Available Balance</p>
-                          <p className="text-lg font-bold text-primary font-sans">${account.balance.toLocaleString(undefined, { minimumFractionDigits: 2 })}</p>
+                          <p className="label-overline">Available Balance</p>
+                          <p className="text-lg font-semibold text-primary mt-1">${account.balance.toLocaleString(undefined, { minimumFractionDigits: 2 })}</p>
                         </div>
                         <div className="flex gap-2">
                           <button
@@ -307,10 +283,10 @@ const Profile: React.FC<ProfileProps> = ({ setActiveTab }) => {
                               setTransferDirection("deposit");
                               setShowTransferModal(true);
                             }}
-                            className="p-2 bg-primary/20 text-primary rounded-xl hover:bg-primary hover:text-black transition-all"
+                            className="p-2 bg-primary/20 text-primary rounded-xl hover:bg-primary hover:text-black transition-colors"
                             title="Transfer Funds"
                           >
-                            <ArrowLeftRight size={14} />
+                            <ArrowLeftRight size={16} />
                           </button>
                           <button
                             onClick={async () => {
@@ -323,10 +299,10 @@ const Profile: React.FC<ProfileProps> = ({ setActiveTab }) => {
                                 }
                               }
                             }}
-                            className="p-2 bg-red-500/10 text-red-400 rounded-xl hover:bg-red-500 hover:text-white transition-all"
+                            className="p-2 bg-red-500/10 text-red-400 rounded-xl hover:bg-red-500 hover:text-white transition-colors"
                             title="Disconnect Account"
                           >
-                            <Trash2 size={14} />
+                            <Trash2 size={16} />
                           </button>
                         </div>
                       </div>
@@ -334,10 +310,10 @@ const Profile: React.FC<ProfileProps> = ({ setActiveTab }) => {
                   </div>
                 ))
               ) : (
-                <div className="p-8 border border-dashed border-white/10 rounded-3xl text-center">
-                  <Landmark className="mx-auto text-gray-600 mb-3" size={32} />
-                  <p className="text-gray-400 text-sm font-semibold font-sans">No bank accounts linked</p>
-                  <p className="text-gray-600 text-xs mt-1 font-sans">Link an account to enable funding and withdrawals.</p>
+                <div className="card-secondary text-center py-8">
+                  <Landmark className="mx-auto text-gray-500 mb-3" size={32} />
+                  <p className="text-sm font-medium text-white">No bank accounts linked</p>
+                  <p className="label-meta mt-1">Link an account to enable funding and withdrawals.</p>
                 </div>
               )}
             </div>
@@ -351,8 +327,8 @@ const Profile: React.FC<ProfileProps> = ({ setActiveTab }) => {
                 setAccountType("checking");
                 setShowLinkBankModal(true);
               }}
-              variant="premium"
-              className="w-full py-4 rounded-xl text-xs font-black tracking-widest flex items-center justify-center gap-2 font-sans"
+              variant="gold"
+              className="w-full flex items-center justify-center gap-2"
             >
               <Plus size={16} />
               Link Bank Account
@@ -369,16 +345,16 @@ const Profile: React.FC<ProfileProps> = ({ setActiveTab }) => {
             animate={{ y: 0 }}
             exit={{ y: "100%" }}
             transition={{ type: "spring", damping: 25, stiffness: 200 }}
-            className="fixed bottom-0 left-0 right-0 bg-[#121212] border-t border-white/10 rounded-t-[2.5rem] p-8 z-50 max-w-md mx-auto shadow-2xl overflow-y-auto max-h-[85vh] hide-scrollbar"
+            className="fixed bottom-0 left-0 right-0 bg-deepBlack border-t border-white/[0.08] rounded-t-3xl p-6 z-50 max-w-md mx-auto shadow-[0_-10px_40px_rgba(0,0,0,0.5)] overflow-y-auto max-h-[85vh] hide-scrollbar"
           >
             <div className="flex justify-between items-center mb-6">
               <div>
-                <h3 className="text-lg font-bold text-white font-sans">Link Bank Account</h3>
-                <p className="text-gray-500 text-xs mt-1 font-sans">Configure your mock banking connection</p>
+                <h3 className="text-lg font-medium text-white">Link Bank Account</h3>
+                <p className="label-meta mt-1">Configure your mock banking connection</p>
               </div>
               <button 
                 onClick={() => setShowLinkBankModal(false)}
-                className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-gray-400 hover:text-white"
+                className="w-8 h-8 rounded-full bg-white/[0.05] flex items-center justify-center text-gray-400 hover:text-white"
               >
                 <X size={18} />
               </button>
@@ -386,11 +362,11 @@ const Profile: React.FC<ProfileProps> = ({ setActiveTab }) => {
 
             <div className="space-y-4 mb-8">
               <div>
-                <label className="block text-gray-500 text-[10px] font-black uppercase tracking-widest mb-2 font-sans">Select Institution</label>
+                <label className="block label-overline mb-2">Select Institution</label>
                 <select 
                   value={bankName}
                   onChange={(e) => setBankName(e.target.value)}
-                  className="w-full p-4 bg-black border border-white/10 text-white rounded-xl focus:ring-primary focus:border-primary text-sm focus:outline-none font-sans"
+                  className="w-full p-4 bg-white/[0.03] border border-white/[0.05] text-white rounded-xl focus:ring-primary focus:border-primary text-sm focus:outline-none"
                 >
                   <option value="">Choose bank...</option>
                   <option value="Chase Bank">Chase Bank</option>
@@ -401,54 +377,22 @@ const Profile: React.FC<ProfileProps> = ({ setActiveTab }) => {
                 </select>
               </div>
 
-              <div>
-                <label className="block text-gray-500 text-[10px] font-black uppercase tracking-widest mb-2 font-sans">Account Nickname</label>
-                <Input
-                  id="account-name"
-                  placeholder="e.g. My Checking Account"
-                  type="text"
-                  value={accountName}
-                  onChange={(e) => setAccountName(e.target.value)}
-                  className="w-full p-4 bg-black border border-white/10 text-white rounded-xl focus:ring-primary focus:border-primary text-sm focus:outline-none font-sans"
-                />
-              </div>
+              <Input id="account-name" label="Account Nickname" placeholder="e.g. My Checking Account" type="text" value={accountName} onChange={(e) => setAccountName(e.target.value)} />
+              <Input id="account-number" label="Account Number" placeholder="Enter 8-12 digits" type="text" value={accountNumber} onChange={(e) => setAccountNumber(e.target.value.replace(/\D/g, ""))} />
+              <Input id="routing-number" label="Routing Number" placeholder="Enter 9 digits" type="text" value={routingNumber} onChange={(e) => setRoutingNumber(e.target.value.replace(/\D/g, ""))} />
 
               <div>
-                <label className="block text-gray-500 text-[10px] font-black uppercase tracking-widest mb-2 font-sans">Account Number</label>
-                <Input
-                  id="account-number"
-                  placeholder="Enter 8-12 digits"
-                  type="text"
-                  value={accountNumber}
-                  onChange={(e) => setAccountNumber(e.target.value.replace(/\D/g, ""))}
-                  className="w-full p-4 bg-black border border-white/10 text-white rounded-xl focus:ring-primary focus:border-primary text-sm focus:outline-none font-sans"
-                />
-              </div>
-
-              <div>
-                <label className="block text-gray-500 text-[10px] font-black uppercase tracking-widest mb-2 font-sans">Routing Number</label>
-                <Input
-                  id="routing-number"
-                  placeholder="Enter 9 digits"
-                  type="text"
-                  value={routingNumber}
-                  onChange={(e) => setRoutingNumber(e.target.value.replace(/\D/g, ""))}
-                  className="w-full p-4 bg-black border border-white/10 text-white rounded-xl focus:ring-primary focus:border-primary text-sm focus:outline-none font-sans"
-                />
-              </div>
-
-              <div>
-                <label className="block text-gray-500 text-[10px] font-black uppercase tracking-widest mb-2 font-sans">Account Type</label>
-                <div className="flex bg-black border border-white/10 rounded-xl p-1">
+                <label className="block label-overline mb-2">Account Type</label>
+                <div className="flex bg-white/[0.03] border border-white/[0.05] rounded-xl p-1">
                   <button 
                     onClick={() => setAccountType("checking")}
-                    className={`flex-1 py-2 text-xs font-bold uppercase tracking-wider rounded-lg transition-all font-sans ${accountType === 'checking' ? 'bg-primary text-black' : 'text-gray-400'}`}
+                    className={`flex-1 py-2 text-xs font-semibold uppercase tracking-wider rounded-lg transition-colors ${accountType === 'checking' ? 'bg-primary text-black' : 'text-gray-400'}`}
                   >
                     Checking
                   </button>
                   <button 
                     onClick={() => setAccountType("savings")}
-                    className={`flex-1 py-2 text-xs font-bold uppercase tracking-wider rounded-lg transition-all font-sans ${accountType === 'savings' ? 'bg-primary text-black' : 'text-gray-400'}`}
+                    className={`flex-1 py-2 text-xs font-semibold uppercase tracking-wider rounded-lg transition-colors ${accountType === 'savings' ? 'bg-primary text-black' : 'text-gray-400'}`}
                   >
                     Savings
                   </button>
@@ -501,12 +445,12 @@ const Profile: React.FC<ProfileProps> = ({ setActiveTab }) => {
                 }
               }}
               disabled={isLinking || !bankName || !accountName || accountNumber.length < 8 || routingNumber.length !== 9}
-              variant="premium"
-              className="w-full py-4 rounded-xl text-xs font-black tracking-widest font-sans"
+              variant="gold"
+              className="w-full"
             >
               {isLinking ? "Linking Account..." : "Confirm & Credit $10,000"}
             </Button>
-            <p className="text-[10px] text-gray-500 text-center mt-3 font-sans">
+            <p className="label-meta text-center mt-3">
               * Newly linked mock accounts automatically start with a $10,000.00 CAD balance.
             </p>
           </motion.div>
@@ -521,50 +465,50 @@ const Profile: React.FC<ProfileProps> = ({ setActiveTab }) => {
             animate={{ y: 0 }}
             exit={{ y: "100%" }}
             transition={{ type: "spring", damping: 25, stiffness: 200 }}
-            className="fixed bottom-0 left-0 right-0 bg-[#121212] border-t border-white/10 rounded-t-[2.5rem] p-8 z-50 max-w-md mx-auto shadow-2xl"
+            className="fixed bottom-0 left-0 right-0 bg-deepBlack border-t border-white/[0.08] rounded-t-3xl p-6 z-50 max-w-md mx-auto shadow-[0_-10px_40px_rgba(0,0,0,0.5)]"
           >
             <div className="flex justify-between items-center mb-6">
               <div>
-                <h3 className="text-lg font-bold text-white font-sans">Transfer Funds</h3>
-                <p className="text-gray-500 text-xs mt-1 font-sans">Move cash between your bank & BitGold</p>
+                <h3 className="text-lg font-medium text-white">Transfer Funds</h3>
+                <p className="label-meta mt-1">Move cash between your bank & BitGold</p>
               </div>
               <button 
                 onClick={() => setShowTransferModal(false)}
-                className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-gray-400 hover:text-white"
+                className="w-8 h-8 rounded-full bg-white/[0.05] flex items-center justify-center text-gray-400 hover:text-white"
               >
                 <X size={18} />
               </button>
             </div>
 
-            <div className="p-4 rounded-2xl bg-white/5 border border-white/5 mb-6 flex justify-between items-center">
+            <div className="p-4 rounded-xl bg-white/[0.03] border border-white/[0.05] mb-6 flex justify-between items-center">
               <div className="text-center flex-1">
-                <p className="text-[9px] text-gray-500 uppercase tracking-widest font-bold font-sans">Bank Balance</p>
-                <p className="text-sm font-bold text-white mt-1 font-sans">${selectedAccountForTransfer.balance.toLocaleString(undefined, { minimumFractionDigits: 2 })}</p>
-                <p className="text-[8px] text-gray-500 font-mono mt-0.5 truncate">{selectedAccountForTransfer.account_name}</p>
+                <p className="label-overline">Bank Balance</p>
+                <p className="text-sm font-semibold text-white mt-1">${selectedAccountForTransfer.balance.toLocaleString(undefined, { minimumFractionDigits: 2 })}</p>
+                <p className="label-meta mt-0.5 truncate">{selectedAccountForTransfer.account_name}</p>
               </div>
               <div className="px-2 text-primary">
                 <ArrowLeftRight size={16} />
               </div>
               <div className="text-center flex-1">
-                <p className="text-[9px] text-gray-500 uppercase tracking-widest font-bold font-sans">BitGold Cash</p>
-                <p className="text-sm font-bold text-white mt-1 font-sans">${(user?.cadBalance ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}</p>
-                <p className="text-[8px] text-gray-500 mt-0.5 font-sans font-medium">App Portfolio</p>
+                <p className="label-overline">BitGold Cash</p>
+                <p className="text-sm font-semibold text-white mt-1">${(user?.cadBalance ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}</p>
+                <p className="label-meta mt-0.5">App Portfolio</p>
               </div>
             </div>
 
             <div className="space-y-4 mb-6">
               <div>
-                <label className="block text-gray-500 text-[10px] font-black uppercase tracking-widest mb-2 font-sans">Direction</label>
-                <div className="flex bg-black border border-white/10 rounded-xl p-1">
+                <label className="block label-overline mb-2">Direction</label>
+                <div className="flex bg-white/[0.03] border border-white/[0.05] rounded-xl p-1">
                   <button 
                     onClick={() => setTransferDirection("deposit")}
-                    className={`flex-1 py-2 text-xs font-bold uppercase tracking-wider rounded-lg transition-all font-sans ${transferDirection === 'deposit' ? 'bg-primary text-black' : 'text-gray-400'}`}
+                    className={`flex-1 py-2 text-xs font-semibold uppercase tracking-wider rounded-lg transition-colors ${transferDirection === 'deposit' ? 'bg-primary text-black' : 'text-gray-400'}`}
                   >
                     Deposit to App
                   </button>
                   <button 
                     onClick={() => setTransferDirection("withdraw")}
-                    className={`flex-1 py-2 text-xs font-bold uppercase tracking-wider rounded-lg transition-all font-sans ${transferDirection === 'withdraw' ? 'bg-primary text-black' : 'text-gray-400'}`}
+                    className={`flex-1 py-2 text-xs font-semibold uppercase tracking-wider rounded-lg transition-colors ${transferDirection === 'withdraw' ? 'bg-primary text-black' : 'text-gray-400'}`}
                   >
                     Withdraw to Bank
                   </button>
@@ -572,15 +516,15 @@ const Profile: React.FC<ProfileProps> = ({ setActiveTab }) => {
               </div>
 
               <div>
-                <label className="block text-gray-500 text-[10px] font-black uppercase tracking-widest mb-2 font-sans">Amount (CAD)</label>
+                <label className="block label-overline mb-2">Amount (CAD)</label>
                 <div className="relative">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 font-medium font-sans">$</span>
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 font-medium">$</span>
                   <input
                     type="text"
                     placeholder="0.00"
                     value={transferAmount}
                     onChange={(e) => /^\d*\.?\d*$/.test(e.target.value) && setTransferAmount(e.target.value)}
-                    className="w-full pl-8 pr-4 py-4 bg-black border border-white/10 text-white rounded-xl focus:ring-primary focus:border-primary text-sm focus:outline-none font-sans font-bold"
+                    className="w-full pl-8 pr-4 py-4 bg-white/[0.03] border border-white/[0.05] text-white rounded-xl focus:ring-primary focus:border-primary text-sm focus:outline-none font-semibold"
                   />
                 </div>
               </div>
@@ -612,43 +556,43 @@ const Profile: React.FC<ProfileProps> = ({ setActiveTab }) => {
                 }
               }}
               disabled={isTransferring || !transferAmount || Number(transferAmount) <= 0}
-              variant="premium"
-              className="w-full py-4 rounded-xl text-xs font-black tracking-widest font-sans"
+              variant="gold"
+              className="w-full"
             >
               {isTransferring ? "Processing..." : "Confirm Transfer"}
             </Button>
           </motion.div>
         )}
       </AnimatePresence>
-    </Container>
+    </div>
   );
 };
 
-const MenuButton = ({ icon: Icon, label, value, isGold, onClick }: any) => (
+const MenuButton = ({ icon: Icon, label, value, isGold, isLast, onClick }: any) => (
   <button 
     onClick={onClick}
-    className="w-full p-5 rounded-2xl glass flex items-center justify-between group hover:bg-white/10 transition-all text-left"
+    className={`card-flat w-full flex items-center justify-between group hover:bg-white/[0.02] px-4 py-4 ${isLast ? 'border-b-0' : ''}`}
   >
     <div className="flex items-center gap-4">
-      <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${isGold ? 'bg-primary text-deepBlack' : 'bg-white/5 text-gray-400'}`}>
+      <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${isGold ? 'bg-primary/10 text-primary' : 'bg-white/[0.05] text-gray-400 group-hover:bg-white/[0.1] group-hover:text-white transition-colors'}`}>
         <Icon size={20} />
       </div>
-      <span className="text-sm font-medium">{label}</span>
+      <span className="text-sm font-medium text-white">{label}</span>
     </div>
     <div className="flex items-center gap-2">
-      {value && <span className="text-xs text-gray-500 font-bold">{value}</span>}
-      <ChevronRight size={16} className="text-gray-700 group-hover:text-white transition-colors" />
+      {value && <span className="label-meta">{value}</span>}
+      <ChevronRight size={16} className="text-gray-600 group-hover:text-white transition-colors" />
     </div>
   </button>
 );
 
-const ToggleMenuButton = ({ icon: Icon, label, enabled, setEnabled }: any) => (
-  <div className="w-full p-5 rounded-2xl glass flex items-center justify-between">
+const ToggleMenuButton = ({ icon: Icon, label, enabled, setEnabled, isLast }: any) => (
+  <div className={`card-flat w-full flex items-center justify-between px-4 py-4 ${isLast ? 'border-b-0' : ''}`}>
     <div className="flex items-center gap-4">
-      <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-gray-400">
+      <div className="w-10 h-10 rounded-xl bg-white/[0.05] flex items-center justify-center text-gray-400">
         <Icon size={20} />
       </div>
-      <span className="text-sm font-medium">{label}</span>
+      <span className="text-sm font-medium text-white">{label}</span>
     </div>
     <ToggleSwitch enabled={enabled} setEnabled={setEnabled} />
   </div>
@@ -657,7 +601,7 @@ const ToggleMenuButton = ({ icon: Icon, label, enabled, setEnabled }: any) => (
 const ToggleSwitch = ({ enabled, setEnabled }: any) => (
   <button
     onClick={() => setEnabled(!enabled)}
-    className={`w-12 h-6 rounded-full p-1 transition-colors duration-200 ${enabled ? 'bg-primary' : 'bg-white/10'}`}
+    className={`w-12 h-6 rounded-full p-1 transition-colors duration-200 ${enabled ? 'bg-primary' : 'bg-white/[0.1]'}`}
   >
     <motion.div
       className="w-4 h-4 bg-white rounded-full shadow-lg"

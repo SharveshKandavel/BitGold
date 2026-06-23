@@ -1,27 +1,25 @@
 import React, { ButtonHTMLAttributes } from 'react';
 import { cn } from '../../lib/utils';
-import { motion, HTMLMotionProps } from 'framer-motion';
 
-type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'premium';
+type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'gold';
 
-interface ButtonProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, keyof HTMLMotionProps<"button"> | 'children'>, Omit<HTMLMotionProps<"button">, 'children'> {
+interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: ButtonVariant;
   icon?: React.ReactNode;
-  children?: React.ReactNode;
+  fullWidth?: boolean;
 }
 
-const Button: React.FC<ButtonProps> = ({ children, className, variant = 'primary', icon, ...props }) => {
+const Button: React.FC<ButtonProps> = ({ children, className, variant = 'primary', icon, fullWidth, ...props }) => {
   return (
-    <motion.button
-      whileTap={{ scale: 0.96 }}
-      whileHover={{ scale: 1.01 }}
+    <button
       className={cn(
-        'inline-flex items-center justify-center px-6 py-3 rounded-xl font-bold uppercase tracking-widest text-xs transition-all duration-200',
+        'inline-flex items-center justify-center rounded-xl font-semibold text-sm transition-all duration-150 active:scale-[0.97]',
+        fullWidth && 'w-full',
         {
-          'bg-primary text-deepBlack shadow-lg shadow-primary/20 hover:bg-bitgold-lightGold': variant === 'primary',
-          'bg-white/5 text-white border border-white/10 hover:bg-white/10': variant === 'secondary',
-          'bg-transparent text-gray-400 hover:text-white': variant === 'ghost',
-          'bg-gradient-to-r from-bitgold-gold via-bitgold-lightGold to-bitgold-gold text-deepBlack shadow-xl shadow-gold/30': variant === 'premium',
+          'bg-primary text-black px-6 py-3 hover:brightness-110': variant === 'primary',
+          'bg-white/[0.05] text-white border border-white/[0.08] px-6 py-3 hover:bg-white/[0.08]': variant === 'secondary',
+          'bg-transparent text-gray-400 px-4 py-2 hover:text-white': variant === 'ghost',
+          'btn-gold': variant === 'gold',
         },
         className
       )}
@@ -29,7 +27,7 @@ const Button: React.FC<ButtonProps> = ({ children, className, variant = 'primary
     >
       {icon && <span className="mr-2">{icon}</span>}
       {children}
-    </motion.button>
+    </button>
   );
 };
 

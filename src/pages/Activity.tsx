@@ -3,30 +3,13 @@ import { useQuery } from 'convex/react';
 import { api } from '../../convex/_generated/api';
 import { motion } from 'framer-motion';
 import { CirclePlus, CircleMinus } from 'lucide-react';
-import Container from '../components/ui/Container';
-import Card from '../components/ui/Card';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
-
-const containerVariants = {
-  hidden: { opacity: 0 },
-  show: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.1,
-    },
-  },
-};
-
-const itemVariants = {
-  hidden: { opacity: 0, y: 20 },
-  show: { opacity: 1, y: 0 },
-};
+import { useCurrentUser } from '../hooks/useCurrentUser';
+import { staggerContainer, staggerItem } from '../lib/animations';
 
 interface ActivityProps {
   setActiveTab?: (tab: string) => void;
 }
-
-import { useCurrentUser } from '../hooks/useCurrentUser';
 
 const Activity: React.FC<ActivityProps> = ({ setActiveTab }) => {
   const user = useCurrentUser();
@@ -37,94 +20,103 @@ const Activity: React.FC<ActivityProps> = ({ setActiveTab }) => {
 
   if (user === undefined || (user && transactions === undefined)) {
     return (
-      <Container className="py-8 flex items-center justify-center min-h-[50vh] font-sans">
+      <div className="page-container justify-center items-center">
         <LoadingSpinner size={32} className="text-primary" />
-      </Container>
+      </div>
     );
   }
 
   return (
-    <Container className="py-8 h-full overflow-y-auto font-sans">
+    <div className="page-container">
       <motion.div
         className="space-y-4 pb-32"
-        variants={containerVariants}
-        initial="hidden"
-        animate="show"
+        variants={staggerContainer}
+        initial="initial"
+        animate="animate"
       >
-        <h1 className="text-2xl font-bold">Activity</h1>
+        <motion.div variants={staggerItem} className="page-header px-1">
+          <h1 className="page-title">Activity</h1>
+        </motion.div>
+        
         {!user ? (
-          <Card>
-            <p className="text-center text-gray-500">Sign in to view your activity.</p>
-          </Card>
+          <motion.div variants={staggerItem} className="card-primary">
+            <p className="text-center label-card">Sign in to view your activity.</p>
+          </motion.div>
         ) : transactions && transactions.length > 0 ? (
-          transactions.map((tx) => {
-            const isBuy = tx.type === 'buy';
-            const isSell = tx.type === 'sell';
-            const isDeposit = tx.type === 'deposit';
-            const isWithdraw = tx.type === 'withdraw';
-            const isRedeem = tx.type === 'redeem';
+          <motion.div variants={staggerItem} className="card-primary px-0 py-2">
+            {transactions.map((tx, idx, arr) => {
+              const isBuy = tx.type === 'buy';
+              const isSell = tx.type === 'sell';
+              const isDeposit = tx.type === 'deposit';
+              const isWithdraw = tx.type === 'withdraw';
+              const isRedeem = tx.type === 'redeem';
 
-            let icon = <CirclePlus className="text-green-500 mr-4" />;
-            let title = "Transaction";
-            let cadDisplay = `$${tx.cadAmount.toFixed(2)}`;
-            let goldDisplay = `${tx.goldAmount.toFixed(4)}g`;
+              let icon = <CirclePlus size={20} className="text-emerald-400" />;
+              let iconBg = 'bg-emerald-500/10';
+              let title = "Transaction";
+              let cadDisplay = `$${tx.cadAmount.toFixed(2)}`;
+              let goldDisplay = `${tx.goldAmount.toFixed(4)}g`;
 
-            if (isBuy) {
-              icon = <CirclePlus className="text-green-500 mr-4" />;
-              title = "Bought Gold";
-              cadDisplay = `$${tx.cadAmount.toFixed(2)}`;
-              goldDisplay = `+${tx.goldAmount.toFixed(4)}g`;
-            } else if (isSell) {
-              icon = <CircleMinus className="text-red-500 mr-4" />;
-              title = "Sold Gold";
-              cadDisplay = `$${tx.cadAmount.toFixed(2)}`;
-              goldDisplay = `-${tx.goldAmount.toFixed(4)}g`;
-            } else if (isDeposit) {
-              icon = <CirclePlus className="text-emerald-400 mr-4" />;
-              title = "Deposited Funds";
-              cadDisplay = `+$${tx.cadAmount.toFixed(2)}`;
-              goldDisplay = "";
-            } else if (isWithdraw) {
-              icon = <CircleMinus className="text-amber-500 mr-4" />;
-              title = "Withdrew Funds";
-              cadDisplay = `-$${tx.cadAmount.toFixed(2)}`;
-              goldDisplay = "";
-            } else if (isRedeem) {
-              icon = <CircleMinus className="text-red-400 mr-4" />;
-              title = "Redeemed Gold";
-              cadDisplay = "Redemption";
-              goldDisplay = `-${tx.goldAmount.toFixed(4)}g`;
-            }
+              if (isBuy) {
+                icon = <CirclePlus size={20} className="text-emerald-400" />;
+                iconBg = 'bg-emerald-500/10';
+                title = "Bought Gold";
+                cadDisplay = `$${tx.cadAmount.toFixed(2)}`;
+                goldDisplay = `+${tx.goldAmount.toFixed(4)}g`;
+              } else if (isSell) {
+                icon = <CircleMinus size={20} className="text-red-400" />;
+                iconBg = 'bg-red-500/10';
+                title = "Sold Gold";
+                cadDisplay = `$${tx.cadAmount.toFixed(2)}`;
+                goldDisplay = `-${tx.goldAmount.toFixed(4)}g`;
+              } else if (isDeposit) {
+                icon = <CirclePlus size={20} className="text-emerald-400" />;
+                iconBg = 'bg-emerald-500/10';
+                title = "Deposited Funds";
+                cadDisplay = `+$${tx.cadAmount.toFixed(2)}`;
+                goldDisplay = "";
+              } else if (isWithdraw) {
+                icon = <CircleMinus size={20} className="text-amber-400" />;
+                iconBg = 'bg-amber-500/10';
+                title = "Withdrew Funds";
+                cadDisplay = `-$${tx.cadAmount.toFixed(2)}`;
+                goldDisplay = "";
+              } else if (isRedeem) {
+                icon = <CircleMinus size={20} className="text-red-400" />;
+                iconBg = 'bg-red-500/10';
+                title = "Redeemed Gold";
+                cadDisplay = "Redemption";
+                goldDisplay = `-${tx.goldAmount.toFixed(4)}g`;
+              }
 
-            return (
-              <motion.div key={tx._id} variants={itemVariants}>
-                <Card>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center font-sans">
+              return (
+                <div key={tx._id} className={`card-flat flex items-center justify-between group transition-colors hover:bg-white/[0.02] px-4 ${idx === arr.length - 1 ? 'border-b-0' : ''}`}>
+                  <div className="flex items-center gap-4">
+                    <div className={`w-10 h-10 rounded-xl ${iconBg} flex items-center justify-center`}>
                       {icon}
-                      <div>
-                        <p className="font-semibold">{title}</p>
-                        <p className="text-sm text-gray-400">
-                          {new Date(tx.createdAt).toLocaleString()}
-                        </p>
-                      </div>
                     </div>
-                    <div className="text-right font-sans">
-                      {cadDisplay && <p className="font-semibold">{cadDisplay}</p>}
-                      {goldDisplay && <p className="text-sm text-gray-400">{goldDisplay}</p>}
+                    <div>
+                      <p className="text-sm font-medium text-white">{title}</p>
+                      <p className="label-timestamp">
+                        {new Date(tx.createdAt).toLocaleString()}
+                      </p>
                     </div>
                   </div>
-                </Card>
-              </motion.div>
-            );
-          })
+                  <div className="text-right">
+                    {goldDisplay && <p className="text-sm font-medium text-white">{goldDisplay}</p>}
+                    {cadDisplay && <p className="label-meta">{cadDisplay}</p>}
+                  </div>
+                </div>
+              );
+            })}
+          </motion.div>
         ) : (
-          <Card>
-            <p className="text-center text-gray-500">No transactions yet.</p>
-          </Card>
+          <motion.div variants={staggerItem} className="card-primary">
+            <p className="text-center label-card">No transactions yet.</p>
+          </motion.div>
         )}
       </motion.div>
-    </Container>
+    </div>
   );
 };
 

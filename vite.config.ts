@@ -18,5 +18,12 @@ export default defineConfig({
   },
   build: {
     sourcemap: true,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ['react', 'react-dom', 'framer-motion', 'recharts', 'convex', 'lucide-react', '@clerk/clerk-react'],
+        },
+      },
+    },
   },
 });

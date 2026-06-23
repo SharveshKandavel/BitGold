@@ -1,6 +1,5 @@
 import { cn } from "../../lib/utils";
-import BitGoldLogo from "../brand/BitGoldLogo";
-import NavLink from "./NavLink";
+
 import Container from "./Container";
 import { useLocation } from "../../context/LocationContext";
 import { ShieldCheck, User } from "lucide-react";

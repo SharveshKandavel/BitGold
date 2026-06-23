@@ -20,7 +20,7 @@
     "@sentry/vite-plugin": "^4.9.1",
     "@tailwindcss/typography": "^0.5.19",
     "clsx": "^2.1.1",
-    "convex": "^1.31.7",
+    "convex": "^1.41.0",
     "convex-helpers": "^0.1.112",
     "framer-motion": "^12.34.0",
     "lucide-react": "^0.563.0",
@@ -36,7 +36,9 @@
     "zod": "^4.3.6"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.11.3",
     "@eslint/js": "^9.21.0",
+    "@playwright/test": "^1.61.0",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
     "@types/node": "^22.19.11",
@@ -59,5 +61,8 @@
     "typescript-eslint": "^8.24.1",
     "vite": "^6.2.0",
     "vitest": "^4.0.18"
+  },
+  "overrides": {
+    "ws": "^8.20.2"
   }
 }

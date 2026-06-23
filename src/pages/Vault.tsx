@@ -1,13 +1,13 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { RefreshCw } from 'lucide-react';
-import Container from '../components/ui/Container';
 
 // Automation Components
 import RoundUpCard from '../components/automation/RoundUpCard';
 import RoundUpCalculator from '../components/ui/RoundUpCalculator';
 import SipConfig from '../components/automation/SipConfig';
-import GoalTracker from '../components/automation/GoalTracker';
+
+import { staggerContainer, staggerItem } from '../lib/animations';
 
 interface VaultPageProps {
   setActiveTab?: (tab: string) => void;
@@ -16,30 +16,30 @@ interface VaultPageProps {
 
 const VaultPage: React.FC<VaultPageProps> = () => {
   return (
-    <Container className="pt-4 pb-24 bg-deepBlack h-full overflow-y-auto hide-scrollbar text-white font-sans">
+    <div className="page-container">
       <motion.div
         initial="initial"
         animate="animate"
-        variants={{ animate: { transition: { staggerChildren: 0.1 } } }}
+        variants={staggerContainer}
         className="space-y-6"
       >
         {/* Header */}
-        <div className="flex justify-between items-center px-6 py-4">
-          <h1 className="text-xl font-bold tracking-tight">Auto-Invest</h1>
-          <div className="w-10 h-10 rounded-full glass flex items-center justify-center text-primary">
+        <motion.div variants={staggerItem} className="page-header px-1 mb-2">
+          <h1 className="page-title">Auto-Invest</h1>
+          <div className="w-10 h-10 rounded-xl bg-white/[0.05] border border-white/[0.08] flex items-center justify-center text-primary">
             <RefreshCw size={20} />
           </div>
-        </div>
+        </motion.div>
 
         {/* Auto-Invest Controls */}
-        <div className="px-6 space-y-6">
+        <motion.div variants={staggerItem} className="space-y-6">
           <RoundUpCard />
           <RoundUpCalculator />
           <SipConfig />
-          <GoalTracker />
-        </div>
+
+        </motion.div>
       </motion.div>
-    </Container>
+    </div>
   );
 };
 

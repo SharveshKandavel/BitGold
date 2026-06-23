@@ -10,7 +10,6 @@ import Profile from './pages/Profile';
 import Activity from './pages/Activity';
 import VaultPage from './pages/Vault';
 import RedeemPage from './pages/Redeem';
-import { PaymentMethodsPage } from './pages/PaymentMethodsPage';
 import { AnimatePresence } from 'framer-motion';
 import PageTransition from './components/PageTransition';
 import { useAuth, useUser } from "@clerk/clerk-react";
@@ -29,8 +28,7 @@ export default function App() {
       activity: 'Activity',
       profile: 'Profile',
       vault: 'Vault',
-      redeem: 'Redeem',
-      'payment-methods': 'PaymentMethods'
+      redeem: 'Redeem'
     };
     return map[hash.toLowerCase()] || 'Home';
   };
@@ -53,8 +51,7 @@ export default function App() {
       Activity: 'activity',
       Profile: 'profile',
       Vault: 'vault',
-      Redeem: 'redeem',
-      PaymentMethods: 'payment-methods'
+      Redeem: 'redeem'
     };
     const hash = map[activeTab] || 'home';
     if (window.location.hash !== `#/${hash}`) {
@@ -77,21 +74,16 @@ export default function App() {
   };
 
   const enterDemoMode = () => {
-    localStorage.setItem('bitgold_demo_mode', 'true');
     setIsDemoMode(true);
   };
 
-  const [disclaimerAcknowledged, setDisclaimerAcknowledged] = useState(() => {
-    return localStorage.getItem('bitgold_disclaimer_acknowledged') === 'true';
-  });
+  const [disclaimerAcknowledged, setDisclaimerAcknowledged] = useState(false);
 
   const acknowledgeDisclaimer = () => {
-    localStorage.setItem('bitgold_disclaimer_acknowledged', 'true');
     setDisclaimerAcknowledged(true);
   };
 
   const resetDisclaimer = () => {
-    localStorage.removeItem('bitgold_disclaimer_acknowledged');
     setDisclaimerAcknowledged(false);
   };
 
@@ -125,7 +117,6 @@ export default function App() {
   useEffect(() => {
     // If Clerk signs in, we should exit demo mode automatically
     if (isSignedIn && isDemoMode) {
-      localStorage.removeItem('bitgold_demo_mode');
       setIsDemoMode(false);
     }
   }, [isSignedIn, isDemoMode, setIsDemoMode]);
@@ -166,8 +157,6 @@ export default function App() {
         return <VaultPage setActiveTab={setActiveTab} initialSegment={vaultInitialSegment} />;
       case 'Redeem':
         return <RedeemPage setActiveTab={setActiveTab} />;
-      case 'PaymentMethods':
-        return <PaymentMethodsPage />;
       default:
         return <Home setActiveTab={setActiveTab} navigateToTrade={navigateToTrade} navigateToVault={navigateToVault} />;
     }
@@ -175,7 +164,7 @@ export default function App() {
 
   if (!isLoaded) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-deepBlack text-bitgold-lightGold">
+      <div className="min-h-screen w-full flex items-center justify-center bg-deepBlack text-bitgold-lightGold">
         Loading authentication...
       </div>
     );
@@ -185,9 +174,9 @@ export default function App() {
 
   if (!disclaimerAcknowledged) {
     return (
-      <div className="h-screen w-full bg-deepBlack text-bitgold-lightGold overflow-hidden flex flex-col">
+      <div className="min-h-screen w-full bg-deepBlack text-bitgold-lightGold overflow-hidden flex flex-col">
         <Toaster theme="dark" position="bottom-right" />
-        <main className="flex-1 overflow-hidden relative">
+        <main className="flex-1 overflow-y-auto relative">
           <DisclaimerPage onAcknowledge={acknowledgeDisclaimer} />
         </main>
       </div>
@@ -195,9 +184,9 @@ export default function App() {
   }
 
   return (
-    <div className="h-screen w-full bg-deepBlack text-bitgold-lightGold overflow-hidden flex flex-col">
+    <div className="min-h-screen w-full bg-deepBlack text-bitgold-lightGold overflow-hidden flex flex-col">
       <Toaster theme="dark" position="bottom-right" />
-      <main className="flex-1 overflow-hidden relative">
+      <main className="flex-1 overflow-y-auto relative pb-24 md:pb-0 md:pl-20">
         {isAuthenticated ? (
           <AnimatePresence mode="wait">
             <PageTransition key={activeTab}>

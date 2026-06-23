@@ -120,7 +120,7 @@ export function RoundUpCalculator() {
         <Button
           onClick={handleInvest}
           disabled={roundUpAmount <= 0 || isLoading || !user}
-          variant="premium"
+          variant="gold"
           className="w-full py-4 rounded-xl text-xs font-black tracking-widest"
         >
           {isLoading ? (

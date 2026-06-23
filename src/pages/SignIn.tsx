@@ -1,22 +1,40 @@
 import React, { useState } from "react";
 import { SignIn, SignUp } from "@clerk/clerk-react";
 import { dark } from "@clerk/themes";
-import { motion, AnimatePresence, Variants } from "framer-motion";
-import { ShieldAlert, ArrowRight, UserCheck, KeyRound, ArrowLeft, Coins } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { ArrowRight, UserCheck, KeyRound, ArrowLeft, Coins } from "lucide-react";
+import { fadeIn } from "../lib/animations";
 
 interface SignInPageProps {
   onEnterDemoMode?: () => void;
   onBackToDisclaimer?: () => void;
 }
 
+const clerkAppearance = {
+  baseTheme: dark,
+  variables: {
+    fontFamily: "Inter, sans-serif",
+    colorPrimary: "#D4AF37",
+    colorBackground: "#0d0d0d",
+    colorText: "#ffffff",
+    colorTextSecondary: "#a3a3a3",
+  },
+  elements: {
+    card: "card-primary shadow-2xl p-6",
+    headerTitle: "text-white font-light tracking-tight text-xl",
+    headerSubtitle: "text-gray-400 text-sm mt-1",
+    socialButtonsBlockButton: "bg-white/[0.05] border border-white/[0.08] hover:bg-white/[0.08] text-white transition-all rounded-xl",
+    formButtonPrimary: "btn-gold w-full py-3 shadow-xl shadow-[#D4AF37]/20 border-none",
+    footerActionLink: "text-[#D4AF37] hover:text-[#FCF6BA] transition-colors font-semibold",
+    formFieldInput: "bg-neutral-950 border border-white/[0.08] text-white rounded-xl focus:ring-[#D4AF37] focus:border-[#D4AF37] focus:border-opacity-100 transition-all",
+    dividerLine: "bg-white/10",
+    dividerText: "label-overline",
+    formFieldLabel: "label-meta mb-2 ml-1"
+  },
+};
+
 export default function SignInPage({ onEnterDemoMode, onBackToDisclaimer }: SignInPageProps) {
   const [authMethod, setAuthMethod] = useState<"select" | "signin" | "signup">("select");
-
-  const fadeInUp: Variants = {
-    initial: { opacity: 0, y: 15 },
-    animate: { opacity: 1, y: 0, transition: { duration: 0.5, ease: "easeOut" } },
-    exit: { opacity: 0, y: -15, transition: { duration: 0.3 } }
-  };
 
   const handleClerkAction = (type: "signin" | "signup") => {
     const publishableKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
@@ -33,57 +51,36 @@ export default function SignInPage({ onEnterDemoMode, onBackToDisclaimer }: Sign
   };
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center bg-[#050505] text-white relative overflow-hidden font-sans">
-      {/* Immersive Background Radial Glows */}
-      <div className="absolute top-[-10%] right-[-10%] w-[600px] h-[600px] bg-gradient-to-br from-[#BF953F]/10 to-transparent blur-[120px] rounded-full" />
-      <div className="absolute bottom-[-10%] left-[-10%] w-[500px] h-[500px] bg-gradient-to-tr from-[#FCF6BA]/5 to-transparent blur-[100px] rounded-full" />
+    <div className="h-full min-h-full w-full flex items-center justify-center bg-[#050505] text-white relative overflow-hidden">
+      {/* Immersive Background Radial Glow */}
+      <div className="absolute top-[-10%] right-[-10%] w-[600px] h-[600px] bg-gradient-to-br from-[#D4AF37]/5 to-transparent blur-[120px] rounded-full" />
       
       <div className="relative z-10 w-full max-w-lg px-6 py-12 flex flex-col items-center">
         
         {/* Core Animated Container */}
         <AnimatePresence mode="wait">
           {authMethod === "select" ? (
-            /* --- STEP 1: Option Selection Screen (Three Options) --- */
+            /* --- STEP 1: Option Selection Screen --- */
             <motion.div
               key="auth-selection"
-              variants={fadeInUp}
+              variants={fadeIn}
               initial="initial"
               animate="animate"
               exit="exit"
               className="w-full flex flex-col items-center"
             >
-              {/* Premium Rotating Gold Coin Logo */}
-              <div className="relative w-20 h-20 mb-6 flex items-center justify-center select-none" style={{ perspective: 1000 }}>
+              {/* Simplified Gold Logo */}
+              <div className="relative w-20 h-20 mb-6 flex items-center justify-center select-none">
                 <motion.div 
-                  className="w-full h-full relative"
-                  whileHover={{ scale: 1.08 }}
-                  animate={{ 
-                    rotateY: [0, 360]
-                  }}
-                  transition={{ 
-                    duration: 8, 
-                    ease: "linear", 
-                    repeat: Infinity 
-                  }}
-                  style={{ transformStyle: "preserve-3d" }}
+                  className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#BF953F] to-[#B38728] flex items-center justify-center shadow-lg"
+                  whileHover={{ scale: 1.05 }}
                 >
-                  {/* Outer glowing ring */}
-                  <div className="absolute inset-0 rounded-full bg-gradient-to-br from-[#BF953F] via-[#FCF6BA] to-[#B38728] blur-md opacity-40" />
-                  
-                  {/* Gold Coin Body */}
-                  <div className="absolute inset-0 rounded-full bg-gradient-to-br from-[#BF953F] via-[#FCF6BA] to-[#B38728] shadow-[0_10px_30px_rgba(212,175,55,0.3)] flex items-center justify-center border border-[#FCF6BA]/40">
-                    {/* Inner ring detail */}
-                    <div className="absolute inset-1.5 rounded-full border border-black/10 flex items-center justify-center bg-gradient-to-tr from-[#B38728]/10 to-transparent">
-                      <span className="text-3xl font-extrabold text-black drop-shadow-md tracking-tight">B</span>
-                    </div>
-                    {/* Outer edge ridge effect */}
-                    <div className="absolute inset-0.5 rounded-full border border-white/20" />
-                  </div>
+                  <span className="text-3xl font-extrabold text-black drop-shadow-sm tracking-tight">B</span>
                 </motion.div>
               </div>
 
-              <h1 className="text-3xl font-extralight tracking-widest text-center text-white mb-2 uppercase">
-                Bit<span className="font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#BF953F] via-[#FCF6BA] to-[#B38728]">Gold</span>
+              <h1 className="text-3xl font-light tracking-widest text-center text-white mb-2 uppercase">
+                Bit<span className="font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#BF953F] to-[#B38728]">Gold</span>
               </h1>
               <p className="text-gray-400 text-xs tracking-wider text-center max-w-sm mb-10 font-light px-4">
                 Securely invest your spare change into 99.9% physical gold. Please choose your access method below.
@@ -93,52 +90,52 @@ export default function SignInPage({ onEnterDemoMode, onBackToDisclaimer }: Sign
                 {/* 1. Demo Card */}
                 <button
                   onClick={onEnterDemoMode}
-                  className="w-full text-left p-6 rounded-3xl bg-gradient-to-br from-white/[0.04] to-transparent border border-white/10 hover:border-[#D4AF37]/60 hover:shadow-[0_0_20px_rgba(212,175,55,0.15)] hover:bg-white/[0.06] transition-all duration-300 group flex items-center justify-between"
+                  className="w-full text-left card-secondary hover:border-[#D4AF37]/40 hover:bg-white/[0.04] transition-all duration-300 group flex items-center justify-between"
                 >
                   <div className="flex items-center gap-5">
-                    <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#BF953F] via-[#FCF6BA] to-[#B38728] flex items-center justify-center text-black shadow-lg shadow-[#D4AF37]/20 group-hover:scale-105 transition-transform">
+                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#BF953F] to-[#B38728] flex items-center justify-center text-black shadow-md group-hover:scale-105 transition-transform">
                       <UserCheck size={20} />
                     </div>
                     <div>
-                      <h3 className="text-sm font-bold uppercase tracking-wider text-white">Instant Demo Account</h3>
-                      <p className="text-xs text-gray-400 mt-1">One-click simulated access. Starts with $10,000 CAD.</p>
+                      <h2 className="label-section text-white text-base font-medium">Instant Demo Account</h2>
+                      <p className="label-meta mt-1 text-gray-400">One-click simulated access. Starts with $10,000 CAD.</p>
                     </div>
                   </div>
-                  <ArrowRight size={18} className="text-gray-600 group-hover:text-white transition-colors" />
+                  <ArrowRight size={18} className="text-gray-400 group-hover:text-white transition-colors" />
                 </button>
 
                 {/* 2. Cloud Login Card */}
                 <button
                   onClick={() => handleClerkAction("signin")}
-                  className="w-full text-left p-6 rounded-3xl bg-gradient-to-br from-white/[0.02] to-transparent border border-white/5 hover:border-[#D4AF37]/40 hover:bg-white/[0.04] transition-all duration-300 group flex items-center justify-between"
+                  className="w-full text-left card-secondary hover:border-[#D4AF37]/40 hover:bg-white/[0.04] transition-all duration-300 group flex items-center justify-between"
                 >
                   <div className="flex items-center gap-5">
-                    <div className="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center text-gray-400 group-hover:bg-[#D4AF37]/10 group-hover:text-[#D4AF37] group-hover:scale-105 transition-all">
+                    <div className="w-12 h-12 rounded-xl bg-white/[0.05] flex items-center justify-center text-gray-400 group-hover:bg-[#D4AF37]/10 group-hover:text-[#D4AF37] group-hover:scale-105 transition-all">
                       <KeyRound size={20} />
                     </div>
                     <div>
-                      <h3 className="text-sm font-bold uppercase tracking-wider text-white">Log In to Cloud</h3>
-                      <p className="text-xs text-gray-500 mt-1">Access your existing gold portfolio and settings.</p>
+                      <h2 className="label-section text-white text-base font-medium">Log In to Cloud</h2>
+                      <p className="label-meta mt-1 text-gray-400">Access your existing gold portfolio and settings.</p>
                     </div>
                   </div>
-                  <ArrowRight size={18} className="text-gray-600 group-hover:text-white transition-colors" />
+                  <ArrowRight size={18} className="text-gray-400 group-hover:text-white transition-colors" />
                 </button>
 
                 {/* 3. Cloud Sign-Up Card */}
                 <button
                   onClick={() => handleClerkAction("signup")}
-                  className="w-full text-left p-6 rounded-3xl bg-gradient-to-br from-white/[0.02] to-transparent border border-white/5 hover:border-[#D4AF37]/40 hover:bg-white/[0.04] transition-all duration-300 group flex items-center justify-between"
+                  className="w-full text-left card-secondary hover:border-[#D4AF37]/40 hover:bg-white/[0.04] transition-all duration-300 group flex items-center justify-between"
                 >
                   <div className="flex items-center gap-5">
-                    <div className="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center text-gray-400 group-hover:bg-[#D4AF37]/10 group-hover:text-[#D4AF37] group-hover:scale-105 transition-all">
+                    <div className="w-12 h-12 rounded-xl bg-white/[0.05] flex items-center justify-center text-gray-400 group-hover:bg-[#D4AF37]/10 group-hover:text-[#D4AF37] group-hover:scale-105 transition-all">
                       <Coins size={20} />
                     </div>
                     <div>
-                      <h3 className="text-sm font-bold uppercase tracking-wider text-white">Register Cloud Account</h3>
-                      <p className="text-xs text-gray-500 mt-1">Create a new cloud profile to save your progress.</p>
+                      <h2 className="label-section text-white text-base font-medium">Register Cloud Account</h2>
+                      <p className="label-meta mt-1 text-gray-400">Create a new cloud profile to save your progress.</p>
                     </div>
                   </div>
-                  <ArrowRight size={18} className="text-gray-600 group-hover:text-white transition-colors" />
+                  <ArrowRight size={18} className="text-gray-400 group-hover:text-white transition-colors" />
                 </button>
               </div>
 
@@ -146,7 +143,7 @@ export default function SignInPage({ onEnterDemoMode, onBackToDisclaimer }: Sign
               {onBackToDisclaimer && (
                 <button
                   onClick={onBackToDisclaimer}
-                  className="text-[10px] font-black uppercase tracking-widest text-gray-500 hover:text-white transition-colors flex items-center gap-2"
+                  className="label-overline text-gray-400 hover:text-white transition-colors flex items-center gap-2"
                 >
                   <ArrowLeft size={12} />
                   <span>Back to disclaimer</span>
@@ -157,89 +154,43 @@ export default function SignInPage({ onEnterDemoMode, onBackToDisclaimer }: Sign
             /* --- STEP 3A: Clerk Sign-In Form --- */
             <motion.div
               key="clerk-signin"
-              variants={fadeInUp}
+              variants={fadeIn}
               initial="initial"
               animate="animate"
               exit="exit"
               className="w-full flex flex-col items-center"
             >
-              {/* Custom Back navigation to go back to choices */}
+              {/* Custom Back navigation */}
               <button
                 onClick={() => setAuthMethod("select")}
-                className="self-start mb-6 px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-xs font-bold uppercase tracking-widest text-gray-300 hover:text-white transition-colors flex items-center gap-2 border border-white/5"
+                className="self-start mb-6 px-4 py-2 rounded-xl bg-white/[0.05] hover:bg-white/[0.08] label-overline text-gray-300 hover:text-white transition-colors flex items-center gap-2 border border-white/[0.05]"
               >
                 <ArrowLeft size={14} />
                 <span>Choose Access Method</span>
               </button>
 
-              <SignIn
-                appearance={{
-                  baseTheme: dark,
-                  variables: {
-                    fontFamily: "Inter, sans-serif",
-                    colorPrimary: "#D4AF37",
-                    colorBackground: "#0d0d0d",
-                    colorText: "#ffffff",
-                    colorTextSecondary: "#a3a3a3",
-                  },
-                  elements: {
-                    card: "bg-white/5 backdrop-blur-2xl border border-white/10 shadow-2xl rounded-3xl p-6",
-                    headerTitle: "text-white font-light tracking-tight text-xl",
-                    headerSubtitle: "text-gray-400 text-sm mt-1",
-                    socialButtonsBlockButton: "bg-white/5 border border-white/10 hover:bg-white/10 hover:border-[#D4AF37]/40 text-white transition-all rounded-xl",
-                    formButtonPrimary: "bg-gradient-to-r from-[#BF953F] via-[#FCF6BA] to-[#B38728] text-black font-extrabold uppercase tracking-widest text-xs py-3 shadow-xl shadow-[#D4AF37]/20 hover:scale-[1.02] active:scale-[0.98] transition-all rounded-xl border-none",
-                    footerActionLink: "text-[#D4AF37] hover:text-[#FCF6BA] transition-colors font-semibold",
-                    formFieldInput: "bg-neutral-950 border border-white/10 text-white rounded-xl focus:ring-[#D4AF37] focus:border-[#D4AF37] focus:border-opacity-100 transition-all",
-                    dividerLine: "bg-white/10",
-                    dividerText: "text-gray-500 text-[10px] font-black uppercase tracking-widest",
-                    formFieldLabel: "text-gray-400 text-[10px] font-bold uppercase tracking-wider mb-2 ml-1"
-                  },
-                }}
-              />
+              <SignIn appearance={clerkAppearance} />
             </motion.div>
           ) : (
             /* --- STEP 3B: Clerk Sign-Up Form --- */
             <motion.div
               key="clerk-signup"
-              variants={fadeInUp}
+              variants={fadeIn}
               initial="initial"
               animate="animate"
               exit="exit"
               className="w-full flex flex-col items-center"
             >
-              {/* Custom Back navigation to go back to choices */}
+              {/* Custom Back navigation */}
               <button
                 onClick={() => setAuthMethod("select")}
-                className="self-start mb-6 px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-xs font-bold uppercase tracking-widest text-gray-300 hover:text-white transition-colors flex items-center gap-2 border border-white/5"
+                className="self-start mb-6 px-4 py-2 rounded-xl bg-white/[0.05] hover:bg-white/[0.08] label-overline text-gray-300 hover:text-white transition-colors flex items-center gap-2 border border-white/[0.05]"
               >
                 <ArrowLeft size={14} />
                 <span>Choose Access Method</span>
               </button>
 
-              <SignUp
-                appearance={{
-                  baseTheme: dark,
-                  variables: {
-                    fontFamily: "Inter, sans-serif",
-                    colorPrimary: "#D4AF37",
-                    colorBackground: "#0d0d0d",
-                    colorText: "#ffffff",
-                    colorTextSecondary: "#a3a3a3",
-                  },
-                  elements: {
-                    card: "bg-white/5 backdrop-blur-2xl border border-white/10 shadow-2xl rounded-3xl p-6",
-                    headerTitle: "text-white font-light tracking-tight text-xl",
-                    headerSubtitle: "text-gray-400 text-sm mt-1",
-                    socialButtonsBlockButton: "bg-white/5 border border-white/10 hover:bg-white/10 hover:border-[#D4AF37]/40 text-white transition-all rounded-xl",
-                    formButtonPrimary: "bg-gradient-to-r from-[#BF953F] via-[#FCF6BA] to-[#B38728] text-black font-extrabold uppercase tracking-widest text-xs py-3 shadow-xl shadow-[#D4AF37]/20 hover:scale-[1.02] active:scale-[0.98] transition-all rounded-xl border-none",
-                    footerActionLink: "text-[#D4AF37] hover:text-[#FCF6BA] transition-colors font-semibold",
-                    formFieldInput: "bg-neutral-950 border border-white/10 text-white rounded-xl focus:ring-[#D4AF37] focus:border-[#D4AF37] focus:border-opacity-100 transition-all",
-                    dividerLine: "bg-white/10",
-                    dividerText: "text-gray-500 text-[10px] font-black uppercase tracking-widest",
-                    formFieldLabel: "text-gray-400 text-[10px] font-bold uppercase tracking-wider mb-2 ml-1"
-                  },
-                }}
-              />
+              <SignUp appearance={clerkAppearance} />
             </motion.div>
           )}
         </AnimatePresence>
