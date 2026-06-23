@@ -1,46 +1,58 @@
-# 💎 BitGold — Premium Physical Gold Investment Ecosystem 
+<div align="center">
+  <img src="./public/bitgold_banner.jpg" alt="BitGold Banner" width="100%" style="border-radius: 12px; margin-bottom: 20px;" />
+  
+  # 💎 BitGold 
+  **The Premium Physical Gold Investment Ecosystem**
+  
+  [![Live Demo](https://img.shields.io/badge/Live_Demo-Access_Here-gold?style=for-the-badge&logo=vercel&logoColor=white)](https://bit-gold-ce7b.vercel.app/)
+  [![React](https://img.shields.io/badge/React_19-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)]()
+  [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)]()
+  [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)]()
+  [![Convex](https://img.shields.io/badge/Convex-FF7300?style=for-the-badge&logo=convex&logoColor=white)]()
+  [![Clerk](https://img.shields.io/badge/Clerk-6C47FF?style=for-the-badge&logo=clerk&logoColor=white)]()
+  
+  *Bridge the gap between digital convenience and physical wealth.*
+</div>
 
-[![Live Demo](https://img.shields.io/badge/Live_Demo-Access_Here-gold?style=for-the-badge&logo=vercel&logoColor=white)](https://bit-gold-ce7b.vercel.app/)
+<br />
 
-BitGold is a high-fidelity full-stack fintech platform designed to bridge the gap between digital convenience and physical wealth. By leveraging real-time market data, automated investment algorithms, and secure cloud infrastructure, BitGold empowers users to build a tangible gold reserve effortlessly.
-
-Built with a **Gold-Standard** tech stack, BitGold transforms daily transactions into a step toward physical financial sovereignty.
+BitGold is a high-fidelity full-stack fintech platform designed to empower users to build a tangible gold reserve effortlessly. By leveraging real-time market data, automated investment algorithms, and secure cloud infrastructure, we transform daily transactions into a step toward physical financial sovereignty.
 
 > [!IMPORTANT]
 > **Real-World Gold Market Integration:** BitGold fetches live, real-world **XAU/USD** gold price index feeds. Every transaction, simulation, automated round-up, and savings goal is directly pegged to real-time global spot gold exchange rates.
 
 ---
 
-## 🎨 Premium Dark Aesthetic & UI/UX
+## ✨ Premium Dark Aesthetic & UI/UX
 
-BitGold is built with a mobile-first philosophy, prioritizing touch interactions and visually stunning layouts:
-*   **Glassmorphic Design:** Sleek, translucent cards with gold-gradient borders, fluid hover states, and smooth micro-animations powered by **Framer Motion**.
-*   **Real-Time Fidelity:** Live XAU/USD gold pricing tracking with custom intervals, real-time spread calculators, and high-performance charts using **Recharts**.
-*   **The Vault:** A physical representation of digital assets, allowing users to track real gold bars and audit logs verified by third-party auditors.
+BitGold is built with a **mobile-first philosophy**, prioritizing touch interactions and visually stunning layouts:
+*   **🌫️ Glassmorphic Design:** Sleek, translucent cards with gold-gradient borders, fluid hover states, and smooth micro-animations powered by **Framer Motion**.
+*   **📈 Real-Time Fidelity:** Live XAU/USD gold pricing tracking with custom intervals, real-time spread calculators, and high-performance charts using **Recharts**.
+*   **🏦 The Vault:** A physical representation of digital assets, allowing users to track real gold bars and audit logs verified by third-party auditors.
 
 ---
 
 ## 🚀 Key Technical Features
 
-### 1. Real-Time Data Engine & Convex Backend
+### ⚡ 1. Real-Time Data Engine & Convex Backend
 *   **Reactive Queries:** Zero polling. UI updates instantly when the database changes, powered by Convex's WebSocket-based pub/sub architecture.
 *   **Serverless Execution:** Secure backend transactions and automation logic written in TypeScript, running in isolated V8 sandboxes.
 
-### 2. Automated Investment Pipeline
+### 💰 2. Automated Investment Pipeline
 *   **Spare Change Round-Ups:** Rounds card transactions to the nearest dollar, multiplying the "spare change" (up to 10x) and converting it to 99.9% pure gold.
 *   **Auto-Pilot SIP:** Configurable recurring gold purchases (Daily, Weekly, Monthly) that execute automatically on scheduling loops.
 *   **Savings Goals:** Dynamic tracking of gold savings goals with progress bars and deadline metrics.
 
-### 3. Trust & Banking Layer
+### 🔒 3. Trust & Banking Layer
 *   **Bank Account Linking:** Automated simulation of secure bank connections, checking/savings types, and balance tracking.
 *   **Deposits & Withdrawals:** High-integrity double-entry ledger that transfers fiat CAD to and from linked accounts.
 *   **Secure Audit Trail:** Public audit logs verifying physical gold bar serial numbers, vault allocations, and official audit dates.
 
-### 4. Viral Growth & Peer-to-Peer Transfers
+### 🌍 4. Viral Growth & Peer-to-Peer Transfers
 *   **Gold Gifting:** Send gold directly to peer email addresses with secure, randomly generated 6-character claim codes (e.g., `BG-X82F1P`).
 *   **Referral Network:** Dual-incentive invite system giving both referrer and referee $10 CAD upon successful referral completion.
 
-### 5. Multi-Tenant Auth & Security
+### 🛡️ 5. Multi-Tenant Auth & Security
 *   **Clerk Auth & JWT Session Sync:** Robust session management, integrating OAuth and user profile syncing into Convex database records.
 *   **TOTP Two-Factor Authentication:** Functional 2FA with QR code generation and verification for high-risk vault operations.
 *   **Biometrics Simulation:** TouchID/FaceID validation flows for premium devices.
@@ -49,14 +61,14 @@ BitGold is built with a mobile-first philosophy, prioritizing touch interactions
 
 ## 📐 System Architecture
 
-### Real-Time Data Flow
+### 🔄 Real-Time Data Flow
 ```mermaid
 sequenceDiagram
     autonumber
-    actor User as Client (React 19)
-    participant Clerk as Clerk (Auth)
-    participant Convex as Convex (Backend)
-    participant CoinGecko as CoinGecko / Market API
+    actor User as "Client (React 19)"
+    participant Clerk as "Clerk (Auth)"
+    participant Convex as "Convex (Backend)"
+    participant CoinGecko as "CoinGecko / Market API"
 
     User->>Clerk: Authenticate User
     Clerk-->>User: JWT Token
@@ -69,20 +81,20 @@ sequenceDiagram
     Convex-->>User: Push Updated Gold & CAD Balances
 ```
 
-### Automation & Transaction Engine
+### ⚙️ Automation & Transaction Engine
 ```mermaid
 graph TD
-    A[User Setup: Round-Up/SIP] --> B{Trigger Event}
-    B -- SIP Schedule reached --> C[Calculate CAD Amount]
-    B -- Bank Card Transaction --> D[Calculate Round-Up Spare Change]
-    D --> E[Apply Multiplier (1x-10x)]
-    C --> F[Query Live Gold Rate]
+    A["User Setup: Round-Up/SIP"] --> B{"Trigger Event"}
+    B -- SIP Schedule reached --> C["Calculate CAD Amount"]
+    B -- Bank Card Transaction --> D["Calculate Round-Up Spare Change"]
+    D --> E["Apply Multiplier (1x-10x)"]
+    C --> F["Query Live Gold Rate"]
     E --> F
-    F --> G{Validate CAD Balance}
-    G -- Insufficient --o H[Log Transaction Status: Failed]
-    G -- Sufficient --> I[Debit CAD / Credit Gold Balance]
-    I --> J[Write Transaction Audit Log]
-    J --> K[Update React UI State]
+    F --> G{"Validate CAD Balance"}
+    G -- Insufficient --o H["Log Transaction Status: Failed"]
+    G -- Sufficient --> I["Debit CAD / Credit Gold Balance"]
+    I --> J["Write Transaction Audit Log"]
+    J --> K["Update React UI State"]
 ```
 
 ---
@@ -91,14 +103,14 @@ graph TD
 
 | Layer | Technology | Purpose |
 | :--- | :--- | :--- |
-| **Frontend** | React 19 + Vite | High-performance, type-safe reactive SPA |
-| **State Management** | React Context API | Global live market feeds and location mapping |
-| **Backend** | Convex | Serverless real-time database, mutations, and queries |
-| **Auth** | Clerk | Multi-tenant session state & identity security |
-| **Styling** | Tailwind CSS | Utility-first responsive dark design system |
-| **Motion** | Framer Motion | Fluid pages transitions & micro-interactions |
-| **Charts** | Recharts | SVG-based responsive analytics and historical plots |
-| **Monitoring** | Sentry | Performance tracing & frontend error logging |
+| **🖼️ Frontend** | React 19 + Vite | High-performance, type-safe reactive SPA |
+| **🧠 State Management** | React Context API | Global live market feeds and location mapping |
+| **⚙️ Backend** | Convex | Serverless real-time database, mutations, and queries |
+| **🔐 Auth** | Clerk | Multi-tenant session state & identity security |
+| **🎨 Styling** | Tailwind CSS | Utility-first responsive dark design system |
+| **✨ Motion** | Framer Motion | Fluid pages transitions & micro-interactions |
+| **📊 Charts** | Recharts | SVG-based responsive analytics and historical plots |
+| **👁️‍🗨️ Monitoring** | Sentry | Performance tracing & frontend error logging |
 
 ---
 
@@ -210,5 +222,7 @@ BitGold uses **Sentry** to log client exceptions, performance anomalies, and mut
 ## 📜 Disclaimer
 BitGold is an educational prototype and financial simulator. No real money or physical gold is transferred, and all transactions, balances, and vault holdings are simulated for demonstration purposes.
 
-*Built for the future of digital asset sovereignty.*
+<div align="center">
+  <i>Built for the future of digital asset sovereignty.</i>
+</div>
 
