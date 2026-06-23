@@ -1,5 +1,4 @@
-<div align="center">
-  <img src="./public/bitgold_banner.jpg" alt="BitGold Banner" width="100%" style="border-radius: 12px; margin-bottom: 20px;" />
+
   
   # 💎 BitGold 
   **The Premium Physical Gold Investment Ecosystem**
